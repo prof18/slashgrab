@@ -26,8 +26,8 @@ One-sentence product:
 - [x] Distribution decided: direct notarized build, no Mac App Store for first release.
 - [x] Dev/prod side-by-side strategy decided.
 - [x] Phase 0 scope decisions locked.
-- [ ] Technical app scaffold created.
-- [ ] MVP implemented.
+- [x] Technical app scaffold created.
+- [x] MVP implemented.
 - [ ] MVP manually tested on macOS.
 - [ ] Release packaging decided.
 
@@ -56,42 +56,42 @@ One-sentence product:
 
 ### Phase 1: Project Scaffold
 
-- [ ] Create Swift macOS project.
-- [ ] Use SwiftPM as the primary project entrypoint unless implementation discovers a strong reason for Xcode project scaffolding.
-- [ ] Keep app menu-bar-first.
-- [ ] Add `script/build_and_run.sh` for Codex/local run loop.
-- [ ] Add `.codex/environments/environment.toml` Run action.
-- [ ] Add Shellporter-style `Scripts/compile_and_run.sh` wrapper only if still useful after `script/build_and_run.sh` exists.
-- [ ] Add basic unit-test target for path formatting.
-- [ ] Verify local build.
+- [x] Create Swift macOS project.
+- [x] Use SwiftPM as the primary project entrypoint unless implementation discovers a strong reason for Xcode project scaffolding.
+- [x] Keep app menu-bar-first.
+- [x] Add `script/build_and_run.sh` for Codex/local run loop.
+- [x] Add `.codex/environments/environment.toml` Run action.
+- [x] Add Shellporter-style `Scripts/compile_and_run.sh` wrapper only if still useful after `script/build_and_run.sh` exists.
+- [x] Add basic unit-test target for path formatting.
+- [x] Verify local build.
 
 ### Phase 2: Core Drop-to-Clipboard
 
-- [ ] Create AppKit status item.
-- [ ] Add custom drop target view for the status icon.
-- [ ] Accept file/folder URLs from pasteboard.
-- [ ] Convert dropped URLs to selected path format.
-- [ ] Copy output to `NSPasteboard.general`.
-- [ ] Show success/failure feedback.
+- [x] Create AppKit status item.
+- [x] Add custom drop target view for the status icon.
+- [x] Accept file/folder URLs from pasteboard.
+- [x] Convert dropped URLs to selected path format.
+- [x] Copy output to `NSPasteboard.general`.
+- [x] Show success/failure feedback.
 
 ### Phase 3: Menu Bar Popover
 
-- [ ] Show last copied path.
-- [ ] Add copy-again action.
-- [ ] Add recent history list.
-- [ ] Add path format picker.
-- [ ] Add launch-at-login toggle.
-- [ ] Add quit action.
-- [ ] Add settings entry point if settings do not fit in the popover.
+- [x] Show last copied path.
+- [x] Add copy-again action.
+- [x] Add recent history list.
+- [x] Add path format picker.
+- [x] Add launch-at-login toggle.
+- [x] Add quit action.
+- [x] Add settings entry point if settings do not fit in the popover.
 
 ### Phase 4: Polish
 
-- [ ] Drag-hover visual state.
-- [ ] Multiple file behavior.
-- [ ] Long path truncation that preserves full copyable text.
-- [ ] Accessibility labels.
-- [ ] Light/dark mode pass.
-- [ ] Error state for unsupported drops.
+- [x] Drag-hover visual state.
+- [x] Multiple file behavior.
+- [x] Long path truncation that preserves full copyable text.
+- [x] Accessibility labels.
+- [x] Light/dark mode pass.
+- [x] Error state for unsupported drops.
 
 ### Phase 5: Release
 
@@ -100,12 +100,12 @@ One-sentence product:
 - [x] App IDs/signing setup source: ASC CLI when needed.
 - [x] Packaging/update model: Shellporter-style zip releases + Sparkle appcast.
 - [ ] Create app icon.
-- [ ] Add signing configuration.
-- [ ] Add Sparkle dependency and updater.
-- [ ] Add `appcast.xml`.
+- [x] Add signing configuration.
+- [x] Add Sparkle dependency and updater.
+- [x] Add `appcast.xml`.
 - [ ] Notarize direct build if distributing outside Mac App Store.
-- [ ] Write release notes.
-- [ ] Run full gate before handoff.
+- [x] Write release notes.
+- [x] Run full gate before handoff.
 
 ## Ground Rules
 

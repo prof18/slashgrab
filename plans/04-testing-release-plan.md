@@ -13,15 +13,15 @@ Slashgrab is built test-first.
 
 Unit tests:
 
-- [ ] POSIX path formatting.
-- [ ] Shell escaping.
-- [ ] Shell-escaped multiple paths joined as terminal arguments.
-- [ ] Double quoting.
-- [ ] File URL formatting.
-- [ ] Tilde replacement.
-- [ ] Multiple path joining.
-- [ ] History size cap.
-- [ ] Duplicate history behavior.
+- [x] POSIX path formatting.
+- [x] Shell escaping.
+- [x] Shell-escaped multiple paths joined as terminal arguments.
+- [x] Double quoting.
+- [x] File URL formatting.
+- [x] Tilde replacement.
+- [x] Multiple path joining.
+- [x] History size cap.
+- [x] Duplicate history behavior.
 
 Integration-level checks where possible:
 
@@ -67,9 +67,9 @@ Permission QA:
 
 Before handoff or release:
 
-- [ ] Build.
-- [ ] Unit tests.
-- [ ] Local run through `./script/build_and_run.sh --verify`.
+- [x] Build.
+- [x] Unit tests.
+- [x] Local run through `./script/build_and_run.sh --verify`.
 - [ ] Lint/format if tooling exists.
 - [ ] Manual drop test.
 - [ ] Manual clipboard verification.

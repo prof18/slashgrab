@@ -14,29 +14,29 @@ Build the MVP with TDD.
 
 ## Required Features
 
-- [ ] Menu bar icon is always available while app is running.
-- [ ] User can drop one file onto the menu bar icon.
-- [ ] User can drop one folder onto the menu bar icon.
-- [ ] User can drop multiple files/folders onto the menu bar icon.
-- [ ] Paths are copied to the clipboard immediately.
-- [ ] Multiple paths in the default shell-escaped format are copied as space-separated terminal arguments.
-- [ ] Multiple paths in list-style formats are copied as newline-separated text.
-- [ ] App shows visible success feedback after copying.
-- [ ] App shows visible failure feedback for unsupported drops.
-- [ ] App stores recent copied outputs.
-- [ ] App menu/popover lets user copy recent output again.
-- [ ] App menu/popover lets user toggle launch at login.
-- [ ] App menu/popover exposes quit.
+- [x] Menu bar icon is always available while app is running.
+- [x] User can drop one file onto the menu bar icon.
+- [x] User can drop one folder onto the menu bar icon.
+- [x] User can drop multiple files/folders onto the menu bar icon.
+- [x] Paths are copied to the clipboard immediately.
+- [x] Multiple paths in the default shell-escaped format are copied as space-separated terminal arguments.
+- [x] Multiple paths in list-style formats are copied as newline-separated text.
+- [x] App shows visible success feedback after copying.
+- [x] App shows visible failure feedback for unsupported drops.
+- [x] App stores recent copied outputs.
+- [x] App menu/popover lets user copy recent output again.
+- [x] App menu/popover lets user toggle launch at login.
+- [x] App menu/popover exposes quit.
 
 ## MVP Path Formats
 
 Recommended MVP formats:
 
-- [ ] POSIX path: `/Users/mg/Desktop/file name.txt`
-- [ ] Shell escaped path: `/Users/mg/Desktop/file\ name.txt`
-- [ ] Double-quoted path: `"/Users/mg/Desktop/file name.txt"`
-- [ ] File URL: `file:///Users/mg/Desktop/file%20name.txt`
-- [ ] Tilde path: `~/Desktop/file name.txt`
+- [x] POSIX path: `/Users/mg/Desktop/file name.txt`
+- [x] Shell escaped path: `/Users/mg/Desktop/file\ name.txt`
+- [x] Double-quoted path: `"/Users/mg/Desktop/file name.txt"`
+- [x] File URL: `file:///Users/mg/Desktop/file%20name.txt`
+- [x] Tilde path: `~/Desktop/file name.txt`
 
 Minimum viable subset if we want to ship fast:
 
