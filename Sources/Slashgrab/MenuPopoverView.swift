@@ -20,6 +20,12 @@ struct MenuPopoverView: View {
             }
             .pickerStyle(.menu)
 
+            DropZoneView(
+                onDrop: { appState.handleDroppedURLs($0) },
+                onRejectedDrop: { appState.handleDroppedURLs([]) }
+            )
+            .frame(height: 58)
+
             if let output = appState.lastCopiedOutput {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Last copied")

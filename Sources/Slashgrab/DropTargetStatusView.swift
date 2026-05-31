@@ -19,7 +19,7 @@ final class DropTargetStatusView: NSView {
     }
 
     override var intrinsicContentSize: NSSize {
-        NSSize(width: 32, height: NSStatusBar.system.thickness)
+        NSSize(width: 38, height: NSStatusBar.system.thickness)
     }
 
     override init(frame frameRect: NSRect) {
@@ -85,6 +85,14 @@ final class DropTargetStatusView: NSView {
         return .copy
     }
 
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        URLDropReader.fileURLs(from: sender.draggingPasteboard).isEmpty ? [] : .copy
+    }
+
+    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        !URLDropReader.fileURLs(from: sender.draggingPasteboard).isEmpty
+    }
+
     override func draggingExited(_ sender: NSDraggingInfo?) {
         visualState = .idle
     }
@@ -110,7 +118,7 @@ final class DropTargetStatusView: NSView {
 
     private func commonInit() {
         frame.size = intrinsicContentSize
-        registerForDraggedTypes([.fileURL])
+        registerForDraggedTypes(URLDropReader.readableTypes)
         setAccessibilityRole(.button)
         setAccessibilityLabel("Slashgrab path drop target")
     }
