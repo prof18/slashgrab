@@ -1,4 +1,5 @@
 import Foundation
+import Sparkle
 
 @MainActor
 protocol UpdaterControlling: AnyObject {
@@ -7,12 +8,39 @@ protocol UpdaterControlling: AnyObject {
 }
 
 @MainActor
-final class SparkleUpdater: UpdaterControlling {
+final class SparkleUpdater: NSObject, UpdaterControlling {
+    private let controller: SPUStandardUpdaterController?
+
+    override init() {
+        if Bundle.main.nonEmptyInfoString("SUFeedURL") != nil,
+           Bundle.main.nonEmptyInfoString("SUPublicEDKey") != nil {
+            controller = SPUStandardUpdaterController(
+                startingUpdater: false,
+                updaterDelegate: nil,
+                userDriverDelegate: nil
+            )
+        } else {
+            controller = nil
+        }
+        super.init()
+        controller?.startUpdater()
+    }
+
     var canCheckForUpdates: Bool {
-        false
+        controller?.updater.canCheckForUpdates ?? false
     }
 
     func checkForUpdates() {
-        // Sparkle is wired in the release scaffold once the update key/feed exist.
+        controller?.checkForUpdates(nil)
+    }
+}
+
+private extension Bundle {
+    func nonEmptyInfoString(_ key: String) -> String? {
+        guard let value = object(forInfoDictionaryKey: key) as? String,
+              !value.isEmpty else {
+            return nil
+        }
+        return value
     }
 }

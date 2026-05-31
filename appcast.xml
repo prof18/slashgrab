@@ -1,0 +1,9 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>Slashgrab Updates</title>
+    <link>https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml</link>
+    <description>Appcast for Slashgrab.</description>
+    <language>en</language>
+  </channel>
+</rss>
