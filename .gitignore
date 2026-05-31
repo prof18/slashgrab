@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+*.app/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.swp
+*.tmp
+.env
