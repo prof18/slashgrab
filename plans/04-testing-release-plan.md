@@ -69,7 +69,7 @@ Before handoff or release:
 
 - [x] Build.
 - [x] Unit tests.
-- [x] Local run through `./script/build_and_run.sh --verify`.
+- [x] Local run through `./Scripts/build_and_run.sh --verify`.
 - [ ] Lint/format if tooling exists.
 - [ ] Manual drop test.
 - [ ] Manual clipboard verification.

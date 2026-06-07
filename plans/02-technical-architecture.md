@@ -66,12 +66,12 @@ Dev builds should either use a dev appcast feed or disable production update che
 
 Use the macOS build-run skill contract:
 
-- Create `script/build_and_run.sh` as the primary local kill/build/run entrypoint.
+- Create `Scripts/build_and_run.sh` as the primary local kill/build/run entrypoint.
 - Stage a project-local `.app` bundle before launch; do not launch a SwiftPM GUI executable directly.
 - Support `--debug`, `--logs`, `--telemetry`, and `--verify` where practical.
-- Add `.codex/environments/environment.toml` with a `Run` action pointing to `./script/build_and_run.sh`.
+- Add `.codex/environments/environment.toml` with a `Run` action pointing to `./Scripts/build_and_run.sh`.
 
-Keep Shellporter-style release scripts under `Scripts/`, but do not let release packaging scripts replace the local Codex run entrypoint.
+Keep all scripts under `Scripts/`, but do not let release packaging scripts replace the local Codex run entrypoint.
 
 ## Why Hybrid AppKit + SwiftUI
 

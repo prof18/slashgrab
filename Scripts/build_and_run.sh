@@ -13,7 +13,7 @@ SHOW_LOGS=0
 
 usage() {
   cat <<'USAGE'
-Usage: script/build_and_run.sh [--debug] [--release] [--dev] [--production] [--verify] [--test] [--logs] [--telemetry]
+Usage: Scripts/build_and_run.sh [--debug] [--release] [--dev] [--production] [--verify] [--test] [--logs] [--telemetry]
 
 Options:
   --debug       Build a debug app bundle. Default.

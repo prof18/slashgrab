@@ -80,7 +80,7 @@ Mirror Shellporter's script shape, adjusted for Slashgrab:
 
 Add:
 
-- `script/build_and_run.sh`
+- `Scripts/build_and_run.sh`
 - `.codex/environments/environment.toml`
 - `.env.example`
 - `version.env`
@@ -138,12 +138,12 @@ Assumptions:
 
 Use the macOS build-run skill convention:
 
-- Primary local run entrypoint: `script/build_and_run.sh`
+- Primary local run entrypoint: `Scripts/build_and_run.sh`
 - Codex Run action: `.codex/environments/environment.toml`
 - For SwiftPM GUI builds, stage a project-local `.app` bundle and launch with `/usr/bin/open -n`.
 - Do not run the GUI app as a raw SwiftPM executable for normal verification.
 
-Release scripts stay under `Scripts/` to match Shellporter.
+All scripts stay under `Scripts/` to match Shellporter.
 
 ## Acceptance Criteria
 

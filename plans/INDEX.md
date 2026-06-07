@@ -59,9 +59,9 @@ One-sentence product:
 - [x] Create Swift macOS project.
 - [x] Use SwiftPM as the primary project entrypoint unless implementation discovers a strong reason for Xcode project scaffolding.
 - [x] Keep app menu-bar-first.
-- [x] Add `script/build_and_run.sh` for Codex/local run loop.
+- [x] Add `Scripts/build_and_run.sh` for Codex/local run loop.
 - [x] Add `.codex/environments/environment.toml` Run action.
-- [x] Add Shellporter-style `Scripts/compile_and_run.sh` wrapper only if still useful after `script/build_and_run.sh` exists.
+- [x] Add Shellporter-style `Scripts/compile_and_run.sh` wrapper only if still useful after `Scripts/build_and_run.sh` exists.
 - [x] Add basic unit-test target for path formatting.
 - [x] Verify local build.
 

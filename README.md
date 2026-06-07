@@ -13,13 +13,13 @@ The project is currently in planning. Start with [plans/INDEX.md](plans/INDEX.md
 Build and verify the side-by-side dev app:
 
 ```bash
-./script/build_and_run.sh --verify --test
+./Scripts/build_and_run.sh --verify --test
 ```
 
 Run it locally:
 
 ```bash
-./script/build_and_run.sh
+./Scripts/build_and_run.sh
 ```
 
 The dev build packages as `Slashgrab Dev.app` with bundle identifier `com.prof18.slashgrab.dev`, separate settings/history, disabled Sparkle checks, a `DEV` menu bar label, and a dev-badged app icon.

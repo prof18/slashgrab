@@ -1,2 +1,2 @@
 [actions.Run]
-command = "./script/build_and_run.sh"
+command = "./Scripts/build_and_run.sh"
