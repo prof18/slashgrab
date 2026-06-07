@@ -63,9 +63,20 @@ BUNDLE_ID=${EXPLICIT_BUNDLE_ID:-$DEFAULT_BUNDLE_ID}
 MACOS_MIN_VERSION=${MACOS_MIN_VERSION:-13.0}
 SIGNING_MODE=${SIGNING_MODE:-adhoc}
 APP_IDENTITY=${APP_IDENTITY:-}
-SPARKLE_FEED_URL=${SPARKLE_FEED_URL:-}
+SPARKLE_FEED_URL=${SPARKLE_FEED_URL:-"https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml"}
 SPARKLE_PUBLIC_ED_KEY=${SPARKLE_PUBLIC_ED_KEY:-}
 ENABLE_SPARKLE_AUTOMATIC_CHECKS=${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-$DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS}
+
+if [[ "$APP_VARIANT" == "production" ]]; then
+  if [[ -z "$SPARKLE_FEED_URL" ]]; then
+    echo "ERROR: SPARKLE_FEED_URL is required for production packaging." >&2
+    exit 1
+  fi
+  if [[ -z "$SPARKLE_PUBLIC_ED_KEY" ]]; then
+    echo "ERROR: SPARKLE_PUBLIC_ED_KEY is required for production packaging." >&2
+    exit 1
+  fi
+fi
 
 if [[ -f "$ROOT_DIR/version.env" ]]; then
   source "$ROOT_DIR/version.env"

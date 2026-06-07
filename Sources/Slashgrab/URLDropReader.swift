@@ -4,12 +4,6 @@ enum URLDropReader {
     struct Inspection {
         let urls: [URL]
         let canAccept: Bool
-        let reason: String
-        let pasteboardSummary: String
-
-        var pathSummary: String {
-            URLDropReader.pathSummary(urls)
-        }
     }
 
     private static let legacyFilenamesType = NSPasteboard.PasteboardType("NSFilenamesPboardType")
@@ -47,25 +41,10 @@ enum URLDropReader {
 
     static func inspection(of pasteboard: NSPasteboard) -> Inspection {
         let urls = fileURLs(from: pasteboard)
-        let pasteboardSummary = pasteboardDebugSummary(from: pasteboard)
         if !urls.isEmpty {
             return Inspection(
                 urls: urls,
-                canAccept: true,
-                reason: "decoded \(urls.count) file URL(s)",
-                pasteboardSummary: pasteboardSummary
-            )
-        }
-
-        let options: [NSPasteboard.ReadingOptionKey: Any] = [
-            .urlReadingFileURLsOnly: true,
-        ]
-        if pasteboard.canReadObject(forClasses: [NSURL.self], options: options) {
-            return Inspection(
-                urls: [],
-                canAccept: true,
-                reason: "NSPasteboard canReadObject reports file URL data, but no URL decoded yet",
-                pasteboardSummary: pasteboardSummary
+                canAccept: true
             )
         }
 
@@ -73,9 +52,7 @@ enum URLDropReader {
         if !directMatches.isEmpty {
             return Inspection(
                 urls: [],
-                canAccept: true,
-                reason: "path-capable direct pasteboard type(s): \(directMatches.joined(separator: ", "))",
-                pasteboardSummary: pasteboardSummary
+                canAccept: true
             )
         }
 
@@ -85,42 +62,27 @@ enum URLDropReader {
         if !itemMatches.isEmpty {
             return Inspection(
                 urls: [],
-                canAccept: true,
-                reason: "path-capable item pasteboard type(s): \(itemMatches.joined(separator: ", "))",
-                pasteboardSummary: pasteboardSummary
+                canAccept: true
             )
         }
 
         return Inspection(
             urls: [],
-            canAccept: false,
-            reason: "no decoded file URLs and no file-path pasteboard types",
-            pasteboardSummary: pasteboardSummary
+            canAccept: false
         )
     }
 
     static func fileURLs(from pasteboard: NSPasteboard) -> [URL] {
         var urls: [URL] = []
 
-        let options: [NSPasteboard.ReadingOptionKey: Any] = [
-            .urlReadingFileURLsOnly: true,
-        ]
-        pasteboard.readObjects(forClasses: [NSURL.self], options: options)?.forEach { object in
-            if let url = object as? URL,
-               url.isFileURL {
-                urls.append(url)
-            } else if let nsURL = object as? NSURL,
-                      nsURL.isFileURL {
-                urls.append(nsURL as URL)
-            }
-        }
-
         for type in concreteURLTypes {
             appendFileURLs(from: pasteboard.string(forType: type), to: &urls)
             appendFileURLs(from: pasteboard.data(forType: type), to: &urls)
             appendFileURLs(fromPropertyList: pasteboard.propertyList(forType: type), to: &urls)
         }
-        appendFileURLs(fromPropertyList: pasteboard.propertyList(forType: legacyFilenamesType), to: &urls)
+        if pasteboard.types?.contains(legacyFilenamesType) == true {
+            appendFileURLs(fromPropertyList: pasteboard.propertyList(forType: legacyFilenamesType), to: &urls)
+        }
 
         pasteboard.pasteboardItems?.forEach { item in
             urls.append(contentsOf: fileURLs(from: item))
@@ -140,7 +102,9 @@ enum URLDropReader {
             appendFileURLs(from: item.data(forType: type), to: &urls)
             appendFileURLs(fromPropertyList: item.propertyList(forType: type), to: &urls)
         }
-        appendFileURLs(fromPropertyList: item.propertyList(forType: legacyFilenamesType), to: &urls)
+        if item.types.contains(legacyFilenamesType) {
+            appendFileURLs(fromPropertyList: item.propertyList(forType: legacyFilenamesType), to: &urls)
+        }
 
         return urls
     }
@@ -205,39 +169,8 @@ enum URLDropReader {
         return nil
     }
 
-    static func pasteboardTypeSummary(from pasteboard: NSPasteboard) -> String {
-        let directTypes = pasteboard.types?.map(\.rawValue) ?? []
-        let itemTypes = pasteboard.pasteboardItems?.flatMap { $0.types.map(\.rawValue) } ?? []
-        return Array(Set(directTypes + itemTypes)).sorted().joined(separator: ", ")
-    }
-
-    static func pasteboardDebugSummary(from pasteboard: NSPasteboard) -> String {
-        let directTypes = typeList(pasteboard.types ?? [])
-        let items = pasteboard.pasteboardItems ?? []
-        let itemSummary = items.enumerated().map { index, item in
-            "item\(index)=[\(typeList(item.types))]"
-        }.joined(separator: "; ")
-        let itemText = itemSummary.isEmpty ? "none" : itemSummary
-        return "direct=[\(directTypes)]; itemCount=\(items.count); items=\(itemText)"
-    }
-
-    static func pathSummary(_ urls: [URL]) -> String {
-        guard !urls.isEmpty else {
-            return "none"
-        }
-
-        return urls.map(\.path).joined(separator: " | ")
-    }
-
     private static func matchingFallbackTypeNames(in types: [NSPasteboard.PasteboardType]) -> [String] {
         types.filter { fallbackFilePathTypes.contains($0) }.map(\.rawValue)
     }
 
-    private static func typeList(_ types: [NSPasteboard.PasteboardType]) -> String {
-        guard !types.isEmpty else {
-            return "none"
-        }
-
-        return types.map(\.rawValue).joined(separator: ", ")
-    }
 }

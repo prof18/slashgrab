@@ -67,27 +67,20 @@ final class DropZoneNSView: NSView {
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
         hovering = inspection.canAccept
-        SlashgrabLog.info(
-            .dragDrop,
-            "popover.dragEntered canAccept=\(inspection.canAccept) reason=\(inspection.reason); paths=\(inspection.pathSummary); pasteboard=\(inspection.pasteboardSummary)"
-        )
         return hovering ? .copy : []
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
         let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
-        SlashgrabLog.debug(.dragDrop, "popover.dragUpdated canAccept=\(inspection.canAccept) reason=\(inspection.reason); paths=\(inspection.pathSummary)")
         return inspection.canAccept ? .copy : []
     }
 
     override func draggingExited(_ sender: NSDraggingInfo?) {
-        SlashgrabLog.info(.dragDrop, "popover.draggingExited")
         hovering = false
     }
 
     override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
         let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
-        SlashgrabLog.info(.dragDrop, "popover.prepareForDragOperation canPrepare=\(inspection.canAccept) reason=\(inspection.reason); paths=\(inspection.pathSummary)")
         return inspection.canAccept
     }
 
@@ -98,24 +91,17 @@ final class DropZoneNSView: NSView {
 
         let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
         let urls = inspection.urls
-        SlashgrabLog.info(
-            .dragDrop,
-            "popover.performDragOperation decodedCount=\(urls.count); reason=\(inspection.reason); paths=\(inspection.pathSummary); pasteboard=\(inspection.pasteboardSummary)"
-        )
         guard !urls.isEmpty else {
-            SlashgrabLog.warning(.dragDrop, "popover.performDragOperation rejected; no resolved URLs")
             onRejectedDrop?()
             return false
         }
 
         onDrop?(urls)
-        SlashgrabLog.info(.dragDrop, "popover.performDragOperation handed off; count=\(urls.count)")
         return true
     }
 
     private func commonInit() {
         registerForDraggedTypes(URLDropReader.readableTypes)
-        SlashgrabLog.debug(.dragDrop, "popover drop zone registered dragged types=\(URLDropReader.readableTypes.map(\.rawValue).joined(separator: ", "))")
         setAccessibilityRole(.button)
         setAccessibilityLabel("Slashgrab popover drop target")
     }

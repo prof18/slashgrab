@@ -35,5 +35,13 @@ let package = Package(
             dependencies: ["SlashgrabCore"],
             path: "Tests/SlashgrabCoreTests"
         ),
+        .testTarget(
+            name: "SlashgrabTests",
+            dependencies: [
+                "Slashgrab",
+                "SlashgrabCore",
+            ],
+            path: "Tests/SlashgrabTests"
+        ),
     ]
 )

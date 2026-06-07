@@ -3,6 +3,7 @@
 ## One-Time Setup
 
 - Copy `.env.example` to `.env` and fill in Apple Developer ID, Team ID, notarization profile, and Sparkle keys.
+- `SPARKLE_PUBLIC_ED_KEY` must be set before production packaging; `Scripts/package_app.sh --production` fails fast without it.
 - Install a Developer ID Application certificate locally.
 - Store notarization credentials with `xcrun notarytool store-credentials`.
 - Install Sparkle command line tools so `generate_appcast` is available.
