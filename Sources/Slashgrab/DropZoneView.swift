@@ -48,12 +48,13 @@ final class DropZoneNSView: NSView {
 
         let border = NSBezierPath(roundedRect: rect, xRadius: 7, yRadius: 7)
         border.lineWidth = 1
+        border.setLineDash([5, 4], count: 2, phase: 0)
         (hovering ? NSColor.controlAccentColor : NSColor.separatorColor).setStroke()
         border.stroke()
 
-        let title = "Drop files or folders here"
+        let title = hovering ? "Release to copy path" : "Drop files or folders here"
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 12, weight: .medium),
+            .font: NSFont.systemFont(ofSize: 12, weight: .semibold),
             .foregroundColor: hovering ? NSColor.controlAccentColor : NSColor.secondaryLabelColor,
         ]
         let size = title.size(withAttributes: attributes)
@@ -64,21 +65,30 @@ final class DropZoneNSView: NSView {
     }
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        let urls = URLDropReader.fileURLs(from: sender.draggingPasteboard)
-        hovering = !urls.isEmpty
-        return urls.isEmpty ? [] : .copy
+        let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
+        hovering = inspection.canAccept
+        SlashgrabLog.info(
+            .dragDrop,
+            "popover.dragEntered canAccept=\(inspection.canAccept) reason=\(inspection.reason); paths=\(inspection.pathSummary); pasteboard=\(inspection.pasteboardSummary)"
+        )
+        return hovering ? .copy : []
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        URLDropReader.fileURLs(from: sender.draggingPasteboard).isEmpty ? [] : .copy
+        let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
+        SlashgrabLog.debug(.dragDrop, "popover.dragUpdated canAccept=\(inspection.canAccept) reason=\(inspection.reason); paths=\(inspection.pathSummary)")
+        return inspection.canAccept ? .copy : []
     }
 
     override func draggingExited(_ sender: NSDraggingInfo?) {
+        SlashgrabLog.info(.dragDrop, "popover.draggingExited")
         hovering = false
     }
 
     override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        !URLDropReader.fileURLs(from: sender.draggingPasteboard).isEmpty
+        let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
+        SlashgrabLog.info(.dragDrop, "popover.prepareForDragOperation canPrepare=\(inspection.canAccept) reason=\(inspection.reason); paths=\(inspection.pathSummary)")
+        return inspection.canAccept
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
@@ -86,18 +96,26 @@ final class DropZoneNSView: NSView {
             hovering = false
         }
 
-        let urls = URLDropReader.fileURLs(from: sender.draggingPasteboard)
+        let inspection = URLDropReader.inspection(of: sender.draggingPasteboard)
+        let urls = inspection.urls
+        SlashgrabLog.info(
+            .dragDrop,
+            "popover.performDragOperation decodedCount=\(urls.count); reason=\(inspection.reason); paths=\(inspection.pathSummary); pasteboard=\(inspection.pasteboardSummary)"
+        )
         guard !urls.isEmpty else {
+            SlashgrabLog.warning(.dragDrop, "popover.performDragOperation rejected; no resolved URLs")
             onRejectedDrop?()
             return false
         }
 
         onDrop?(urls)
+        SlashgrabLog.info(.dragDrop, "popover.performDragOperation handed off; count=\(urls.count)")
         return true
     }
 
     private func commonInit() {
         registerForDraggedTypes(URLDropReader.readableTypes)
+        SlashgrabLog.debug(.dragDrop, "popover drop zone registered dragged types=\(URLDropReader.readableTypes.map(\.rawValue).joined(separator: ", "))")
         setAccessibilityRole(.button)
         setAccessibilityLabel("Slashgrab popover drop target")
     }

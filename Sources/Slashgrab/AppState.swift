@@ -44,56 +44,72 @@ final class AppState: ObservableObject {
         settings.selectedFormat = format
     }
 
-    func handleDroppedURLs(_ urls: [URL]) {
+    @discardableResult
+    func handleDroppedURLs(_ urls: [URL]) -> Bool {
         guard !urls.isEmpty else {
+            SlashgrabLog.warning(.appState, "handleDroppedURLs rejected empty URL list")
             showFeedback(.failure("Unsupported drop"))
-            return
+            return false
         }
 
+        SlashgrabLog.info(.appState, "handleDroppedURLs accepted count=\(urls.count); format=\(selectedFormat.rawValue); paths=\(URLDropReader.pathSummary(urls))")
         let output = formatter.format(urls: urls, as: selectedFormat)
-        copyOutput(output, successMessage: urls.count == 1 ? "Copied 1 path" : "Copied \(urls.count) paths")
+        return copyOutput(output, successMessage: "Path copied")
     }
 
     func copyAgain(_ output: String) {
+        SlashgrabLog.info(.appState, "copyAgain requested; outputLength=\(output.count); output=\(output)")
         copyOutput(output, successMessage: "Copied again")
     }
 
     func clearHistory() {
+        SlashgrabLog.info(.appState, "clearHistory requested; previousCount=\(history.entries.count)")
         history.clear()
         settings.saveHistory(history)
     }
 
     func setLaunchAtLoginEnabled(_ enabled: Bool) {
+        SlashgrabLog.info(.appState, "setLaunchAtLoginEnabled requested enabled=\(enabled)")
         do {
             try launchAtLoginController.setEnabled(enabled)
             launchAtLoginEnabled = launchAtLoginController.isEnabled
             settings.launchAtLoginEnabled = launchAtLoginEnabled
+            SlashgrabLog.info(.appState, "setLaunchAtLoginEnabled succeeded actualEnabled=\(launchAtLoginEnabled)")
             showFeedback(launchAtLoginEnabled ? .success("Launch at login on") : .success("Launch at login off"))
         } catch {
             launchAtLoginEnabled = launchAtLoginController.isEnabled
             settings.launchAtLoginEnabled = launchAtLoginEnabled
+            SlashgrabLog.error(.appState, "setLaunchAtLoginEnabled failed actualEnabled=\(launchAtLoginEnabled); error=\(error.localizedDescription)")
             showFeedback(.failure("Launch at login failed"))
         }
     }
 
-    private func copyOutput(_ output: String, successMessage: String) {
+    @discardableResult
+    private func copyOutput(_ output: String, successMessage: String) -> Bool {
+        SlashgrabLog.info(.appState, "copyOutput attempting; message=\(successMessage); outputLength=\(output.count); output=\(output)")
         do {
             try clipboardWriter.writeString(output)
             history.add(output)
             settings.saveHistory(history)
-            showFeedback(.success(successMessage))
+            SlashgrabLog.info(.appState, "copyOutput succeeded; historyCount=\(history.entries.count)")
+            showFeedback(.success(successMessage, detail: output))
+            return true
         } catch {
+            SlashgrabLog.error(.appState, "copyOutput failed; error=\(error.localizedDescription)")
             showFeedback(.failure("Clipboard write failed"))
+            return false
         }
     }
 
     private func showFeedback(_ feedback: DropFeedback) {
         feedbackTask?.cancel()
         self.feedback = feedback
+        SlashgrabLog.debug(.appState, "showFeedback kind=\(feedback.kind.logName); message=\(feedback.message); detail=\(feedback.detail ?? "none")")
         feedbackTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(1.5))
+            try? await Task.sleep(for: .seconds(1.7))
             await MainActor.run {
                 if !Task.isCancelled {
+                    SlashgrabLog.debug(.appState, "feedback auto-dismissed")
                     self?.feedback = nil
                 }
             }
@@ -110,12 +126,24 @@ struct DropFeedback: Identifiable, Equatable {
     let id = UUID()
     let kind: Kind
     let message: String
+    let detail: String?
 
-    static func success(_ message: String) -> DropFeedback {
-        DropFeedback(kind: .success, message: message)
+    static func success(_ message: String, detail: String? = nil) -> DropFeedback {
+        DropFeedback(kind: .success, message: message, detail: detail)
     }
 
     static func failure(_ message: String) -> DropFeedback {
-        DropFeedback(kind: .failure, message: message)
+        DropFeedback(kind: .failure, message: message, detail: nil)
+    }
+}
+
+private extension DropFeedback.Kind {
+    var logName: String {
+        switch self {
+        case .success:
+            "success"
+        case .failure:
+            "failure"
+        }
     }
 }

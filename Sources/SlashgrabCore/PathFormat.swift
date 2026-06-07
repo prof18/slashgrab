@@ -12,15 +12,15 @@ public enum PathFormat: String, CaseIterable, Codable, Identifiable, Sendable {
     public var displayName: String {
         switch self {
         case .shellEscaped:
-            "Shell escaped"
+            "Shell Escaped"
         case .posix:
-            "POSIX path"
+            "Path"
         case .doubleQuoted:
-            "Double quoted"
+            "Quoted Path"
         case .fileURL:
             "File URL"
         case .tilde:
-            "Tilde path"
+            "Home-relative Path"
         }
     }
 
