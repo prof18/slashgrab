@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIGURATION=${1:-release}
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 export CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache"
+
+EXPLICIT_APP_NAME=${APP_NAME:-}
+EXPLICIT_BUNDLE_ID=${BUNDLE_ID:-}
 
 if [[ -f "$ROOT_DIR/.env" ]]; then
   set -a
@@ -12,15 +14,58 @@ if [[ -f "$ROOT_DIR/.env" ]]; then
   set +a
 fi
 
+CONFIGURATION=${CONFIGURATION:-release}
+APP_VARIANT=${APP_VARIANT:-dev}
+
+usage() {
+  cat <<'USAGE'
+Usage: Scripts/package_app.sh [debug|release] [--dev|--production]
+
+Options:
+  debug          Build a debug app bundle.
+  release        Build a release app bundle. Default.
+  --dev          Package Slashgrab Dev.app with com.prof18.slashgrab.dev. Default.
+  --production   Package Slashgrab.app with com.prof18.slashgrab.
+USAGE
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    debug|release) CONFIGURATION="$arg" ;;
+    --dev) APP_VARIANT=dev ;;
+    --production|--prod) APP_VARIANT=production ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "Unknown argument: $arg" >&2; usage; exit 2 ;;
+  esac
+done
+
 PRODUCT_NAME=${PRODUCT_NAME:-Slashgrab}
-APP_NAME=${APP_NAME:-"Slashgrab Dev"}
-BUNDLE_ID=${BUNDLE_ID:-com.prof18.slashgrab.dev}
+case "$APP_VARIANT" in
+  dev)
+    DEFAULT_APP_NAME="Slashgrab Dev"
+    DEFAULT_BUNDLE_ID="com.prof18.slashgrab.dev"
+    DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS=false
+    ;;
+  production)
+    DEFAULT_APP_NAME="Slashgrab"
+    DEFAULT_BUNDLE_ID="com.prof18.slashgrab"
+    DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS=true
+    ;;
+  *)
+    echo "Unknown APP_VARIANT: $APP_VARIANT" >&2
+    usage
+    exit 2
+    ;;
+esac
+
+APP_NAME=${EXPLICIT_APP_NAME:-$DEFAULT_APP_NAME}
+BUNDLE_ID=${EXPLICIT_BUNDLE_ID:-$DEFAULT_BUNDLE_ID}
 MACOS_MIN_VERSION=${MACOS_MIN_VERSION:-13.0}
 SIGNING_MODE=${SIGNING_MODE:-adhoc}
 APP_IDENTITY=${APP_IDENTITY:-}
 SPARKLE_FEED_URL=${SPARKLE_FEED_URL:-}
 SPARKLE_PUBLIC_ED_KEY=${SPARKLE_PUBLIC_ED_KEY:-}
-ENABLE_SPARKLE_AUTOMATIC_CHECKS=${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-false}
+ENABLE_SPARKLE_AUTOMATIC_CHECKS=${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-$DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS}
 
 if [[ -f "$ROOT_DIR/version.env" ]]; then
   source "$ROOT_DIR/version.env"
@@ -32,6 +77,11 @@ fi
 APP_BUNDLE="$ROOT_DIR/${APP_NAME}.app"
 EXECUTABLE_TARGET="$APP_BUNDLE/Contents/MacOS/$PRODUCT_NAME"
 ARCH_LIST=( ${ARCHES:-} )
+if [[ "$APP_VARIANT" == "dev" && -d "$ROOT_DIR/Scripts/Assets/AppIconDev.icon" ]]; then
+  APP_ICON_SOURCE_DIR="$ROOT_DIR/Scripts/Assets/AppIconDev.icon"
+else
+  APP_ICON_SOURCE_DIR="$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/AppIcon.icon"
+fi
 
 build_product_path() {
   local arch="${1:-}"
@@ -91,6 +141,53 @@ if compgen -G "$BUILD_DIR/*.framework" >/dev/null; then
   /usr/bin/install_name_tool -add_rpath "@executable_path/../Frameworks" "$EXECUTABLE_TARGET" || true
 fi
 
+if compgen -G "$BUILD_DIR/${PRODUCT_NAME}_${PRODUCT_NAME}.*" >/dev/null; then
+  cp -R "$BUILD_DIR/${PRODUCT_NAME}_${PRODUCT_NAME}."* "$APP_BUNDLE/Contents/Resources/"
+fi
+
+if [[ -d "$APP_ICON_SOURCE_DIR" ]]; then
+  ICON_BUILD_DIR="$ROOT_DIR/.build/app-icon-$CONFIGURATION"
+  ICON_INPUT_DIR="$ROOT_DIR/.build/app-icon-input-$CONFIGURATION/AppIcon.icon"
+
+  if ! xcrun --find actool >/dev/null 2>&1; then
+    echo "ERROR: AppIcon.icon requires Xcode actool to generate app bundle icon resources." >&2
+    exit 1
+  fi
+
+  rm -rf "$ICON_BUILD_DIR"
+  rm -rf "$(dirname "$ICON_INPUT_DIR")"
+  mkdir -p "$ICON_BUILD_DIR" "$(dirname "$ICON_INPUT_DIR")"
+  cp -R "$APP_ICON_SOURCE_DIR" "$ICON_INPUT_DIR"
+
+  xcrun actool "$ICON_INPUT_DIR" \
+    --compile "$ICON_BUILD_DIR" \
+    --platform macosx \
+    --minimum-deployment-target "$MACOS_MIN_VERSION" \
+    --target-device mac \
+    --app-icon AppIcon \
+    --include-all-app-icons \
+    --output-partial-info-plist "$ICON_BUILD_DIR/AppIcon-partial.plist" \
+    >/dev/null
+
+  cp -R "$ICON_INPUT_DIR" "$APP_BUNDLE/Contents/Resources/AppIcon.icon"
+
+  if [[ ! -f "$ICON_BUILD_DIR/Assets.car" || ! -f "$ICON_BUILD_DIR/AppIcon.icns" ]]; then
+    echo "ERROR: actool did not generate expected AppIcon resources." >&2
+    exit 1
+  fi
+
+  cp "$ICON_BUILD_DIR/Assets.car" "$APP_BUNDLE/Contents/Resources/Assets.car"
+  cp "$ICON_BUILD_DIR/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+fi
+
+if [[ -f "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/AppIcon.icns" ]]; then
+  cp "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+fi
+
+if [[ -f "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/Assets.car" ]]; then
+  cp "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/Assets.car" "$APP_BUNDLE/Contents/Resources/Assets.car"
+fi
+
 BUILD_TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
@@ -103,14 +200,17 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
     <key>CFBundleDisplayName</key><string>${APP_NAME}</string>
     <key>CFBundleIdentifier</key><string>${BUNDLE_ID}</string>
     <key>CFBundleExecutable</key><string>${PRODUCT_NAME}</string>
+    <key>CFBundleIconName</key><string>AppIcon</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>${MARKETING_VERSION}</string>
     <key>CFBundleVersion</key><string>${BUILD_NUMBER}</string>
     <key>LSMinimumSystemVersion</key><string>${MACOS_MIN_VERSION}</string>
     <key>LSUIElement</key><true/>
-    <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Prof18.</string>
+    <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Marco Gomiero.</string>
     <key>BuildTimestamp</key><string>${BUILD_TIMESTAMP}</string>
     <key>GitCommit</key><string>${GIT_COMMIT}</string>
+    <key>SlashgrabBuildVariant</key><string>${APP_VARIANT}</string>
     <key>SUFeedURL</key><string>${SPARKLE_FEED_URL}</string>
     <key>SUPublicEDKey</key><string>${SPARKLE_PUBLIC_ED_KEY}</string>
     <key>SUEnableAutomaticChecks</key><${ENABLE_SPARKLE_AUTOMATIC_CHECKS}/>

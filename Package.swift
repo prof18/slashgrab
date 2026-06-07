@@ -21,7 +21,10 @@ let package = Package(
                 "SlashgrabCore",
                 .product(name: "Sparkle", package: "Sparkle"),
             ],
-            path: "Sources/Slashgrab"
+            path: "Sources/Slashgrab",
+            resources: [
+                .process("Resources"),
+            ]
         ),
         .target(
             name: "SlashgrabCore",

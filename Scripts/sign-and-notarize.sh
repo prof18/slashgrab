@@ -31,11 +31,12 @@ trap cleanup EXIT
 APP_NAME="$APP_NAME" \
 PRODUCT_NAME="$PRODUCT_NAME" \
 BUNDLE_ID="$BUNDLE_ID" \
+APP_VARIANT=production \
 SIGNING_MODE=developer-id \
 APP_IDENTITY="$APP_IDENTITY" \
 ENABLE_SPARKLE_AUTOMATIC_CHECKS=${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-true} \
 ARCHES="$ARCHES_VALUE" \
-  "$ROOT_DIR/Scripts/package_app.sh" release
+  "$ROOT_DIR/Scripts/package_app.sh" release --production
 
 /usr/bin/ditto --norsrc -c -k --keepParent "$APP_NAME.app" "$NOTARIZE_ZIP"
 

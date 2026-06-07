@@ -157,7 +157,7 @@ Release scripts stay under `Scripts/` to match Shellporter.
 - [ ] Download URL returns 200.
 - [ ] Installed older production build detects the update.
 - [ ] Dev build does not update itself from the production feed.
-- [ ] Dev and production apps can run side by side.
-- [ ] `codesign --verify --verbose=2 Slashgrab.app` passes.
+- [x] Dev and production apps can run side by side.
+- [x] `codesign --verify --verbose=2 Slashgrab.app` passes.
 - [ ] `spctl -a -t exec -vv Slashgrab.app` accepts the app.
 - [ ] `xcrun stapler validate Slashgrab.app` passes.
