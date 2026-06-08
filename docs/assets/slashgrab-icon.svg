@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="background" x1="512" y1="0" x2="512" y2="716.8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3a4252"/>
+      <stop offset="1" stop-color="#1b2029"/>
+    </linearGradient>
+    <clipPath id="shape">
+      <rect width="1024" height="1024" rx="230" ry="230"/>
+    </clipPath>
+    <mask id="slash-mask">
+      <rect width="1024" height="1024" fill="white"/>
+      <line x1="438" y1="604" x2="586" y2="420" stroke="black" stroke-width="92" stroke-linecap="round"/>
+    </mask>
+  </defs>
+  <g clip-path="url(#shape)">
+    <rect width="1024" height="1024" fill="url(#background)"/>
+    <rect x="206" y="330" width="612" height="364" rx="112" fill="#ffffff" opacity="0.22"/>
+    <rect x="206" y="330" width="612" height="364" rx="112" fill="#ffffff" mask="url(#slash-mask)"/>
+    <circle cx="760" cy="660" r="100" fill="#007aff"/>
+    <path d="M716 664 l32 34 l58 -72" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
