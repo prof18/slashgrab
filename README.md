@@ -1,8 +1,9 @@
+# Slashgrab
+
 <p align="center">
   <img src="docs/assets/slashgrab-icon-256.png" alt="Slashgrab" width="160" />
 </p>
 
-# Slashgrab
 
 Slashgrab is a tiny macOS menu bar utility that turns dropped files and folders into copied path text.
 
