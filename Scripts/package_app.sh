@@ -66,6 +66,7 @@ APP_IDENTITY=${APP_IDENTITY:-}
 SPARKLE_FEED_URL=${SPARKLE_FEED_URL:-"https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml"}
 SPARKLE_PUBLIC_ED_KEY=${SPARKLE_PUBLIC_ED_KEY:-}
 ENABLE_SPARKLE_AUTOMATIC_CHECKS=${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-$DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS}
+ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN=${ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN:-0}
 
 if [[ "$APP_VARIANT" == "production" ]]; then
   if [[ -z "$SPARKLE_FEED_URL" ]]; then
@@ -73,8 +74,13 @@ if [[ "$APP_VARIANT" == "production" ]]; then
     exit 1
   fi
   if [[ -z "$SPARKLE_PUBLIC_ED_KEY" ]]; then
-    echo "ERROR: SPARKLE_PUBLIC_ED_KEY is required for production packaging." >&2
-    exit 1
+    if [[ "$ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN" == "1" && "$SIGNING_MODE" == "adhoc" ]]; then
+      ENABLE_SPARKLE_AUTOMATIC_CHECKS=false
+      echo "WARN: SPARKLE_PUBLIC_ED_KEY is missing; building local ad-hoc production app with Sparkle disabled." >&2
+    else
+      echo "ERROR: SPARKLE_PUBLIC_ED_KEY is required for production packaging." >&2
+      exit 1
+    fi
   fi
 fi
 
