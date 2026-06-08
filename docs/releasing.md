@@ -2,12 +2,12 @@
 
 ## One-Time Setup
 
-- Copy `.env.example` to `.env` and fill in Apple Developer ID, Team ID, notarization profile, and Sparkle keys.
-- `SPARKLE_PUBLIC_ED_KEY` must be set before production packaging; `Scripts/package_app.sh --production` fails fast without it.
+- Copy `.env.example` to `.env` and fill in the Developer ID identity, notarization keychain profile, and Sparkle keys.
+- `SPARKLE_PUBLIC_ED_KEY` can be set directly, or `Scripts/package_app.sh --production` can derive it from `SPARKLE_PRIVATE_KEY_FILE`.
 - Local production smoke runs through `Scripts/build_and_run.sh --production --release` may run without the key; they are ad-hoc signed and have Sparkle disabled.
 - Install a Developer ID Application certificate locally.
 - Store notarization credentials with `xcrun notarytool store-credentials`.
-- Install Sparkle command line tools so `generate_appcast` is available.
+- `Scripts/make_appcast.sh` uses `generate_appcast` from `PATH` or from SwiftPM's `.build/artifacts/sparkle/Sparkle/bin/generate_appcast`.
 
 ## Release Flow
 
@@ -18,7 +18,8 @@
 5. Run `./Scripts/sign-and-notarize.sh`.
 6. Create the GitHub release and upload `Slashgrab-X.Y.Z.zip`.
 7. Run `./Scripts/make_appcast.sh Slashgrab-X.Y.Z.zip`.
-8. Commit and push `appcast.xml`.
+8. Confirm `appcast.xml` contains an enclosure for `Slashgrab-X.Y.Z.zip` with `sparkle:edSignature`.
+9. Commit and push `appcast.xml`.
 
 ## Validation
 

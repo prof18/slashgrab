@@ -6,7 +6,16 @@ cd "$ROOT_DIR"
 export CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache"
 
 EXPLICIT_APP_NAME=${APP_NAME:-}
+EXPLICIT_PRODUCT_NAME=${PRODUCT_NAME:-}
 EXPLICIT_BUNDLE_ID=${BUNDLE_ID:-}
+EXPLICIT_SIGNING_MODE=${SIGNING_MODE:-}
+EXPLICIT_APP_IDENTITY=${APP_IDENTITY:-}
+EXPLICIT_ARCHES=${ARCHES:-}
+EXPLICIT_SPARKLE_FEED_URL=${SPARKLE_FEED_URL:-}
+EXPLICIT_SPARKLE_PRIVATE_KEY_FILE=${SPARKLE_PRIVATE_KEY_FILE:-}
+EXPLICIT_SPARKLE_PUBLIC_ED_KEY=${SPARKLE_PUBLIC_ED_KEY:-}
+EXPLICIT_ENABLE_SPARKLE_AUTOMATIC_CHECKS=${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-}
+EXPLICIT_ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN=${ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN:-}
 
 if [[ -f "$ROOT_DIR/.env" ]]; then
   set -a
@@ -39,7 +48,7 @@ for arg in "$@"; do
   esac
 done
 
-PRODUCT_NAME=${PRODUCT_NAME:-Slashgrab}
+PRODUCT_NAME=${EXPLICIT_PRODUCT_NAME:-${PRODUCT_NAME:-Slashgrab}}
 case "$APP_VARIANT" in
   dev)
     DEFAULT_APP_NAME="Slashgrab Dev"
@@ -63,15 +72,25 @@ BUNDLE_ID=${EXPLICIT_BUNDLE_ID:-$DEFAULT_BUNDLE_ID}
 MACOS_MIN_VERSION=${MACOS_MIN_VERSION:-13.0}
 SIGNING_MODE=${SIGNING_MODE:-adhoc}
 APP_IDENTITY=${APP_IDENTITY:-}
-SPARKLE_FEED_URL=${SPARKLE_FEED_URL:-"https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml"}
-SPARKLE_PUBLIC_ED_KEY=${SPARKLE_PUBLIC_ED_KEY:-}
-ENABLE_SPARKLE_AUTOMATIC_CHECKS=${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-$DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS}
-ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN=${ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN:-0}
+SIGNING_MODE=${EXPLICIT_SIGNING_MODE:-${SIGNING_MODE:-adhoc}}
+APP_IDENTITY=${EXPLICIT_APP_IDENTITY:-${APP_IDENTITY:-}}
+SPARKLE_FEED_URL=${EXPLICIT_SPARKLE_FEED_URL:-${SPARKLE_FEED_URL:-"https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml"}}
+SPARKLE_PRIVATE_KEY_FILE=${EXPLICIT_SPARKLE_PRIVATE_KEY_FILE:-${SPARKLE_PRIVATE_KEY_FILE:-}}
+SPARKLE_PUBLIC_ED_KEY=${EXPLICIT_SPARKLE_PUBLIC_ED_KEY:-${SPARKLE_PUBLIC_ED_KEY:-}}
+ENABLE_SPARKLE_AUTOMATIC_CHECKS=${EXPLICIT_ENABLE_SPARKLE_AUTOMATIC_CHECKS:-${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-$DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS}}
+ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN=${EXPLICIT_ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN:-${ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN:-0}}
+
+derive_sparkle_public_key() {
+  SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" swift -e 'import Foundation; import CryptoKit; let path = ProcessInfo.processInfo.environment["SPARKLE_PRIVATE_KEY_FILE"]!; let text = try String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines); let seed = Data(base64Encoded: text)!; let privateKey = try Curve25519.Signing.PrivateKey(rawRepresentation: seed); print(privateKey.publicKey.rawRepresentation.base64EncodedString())'
+}
 
 if [[ "$APP_VARIANT" == "production" ]]; then
   if [[ -z "$SPARKLE_FEED_URL" ]]; then
     echo "ERROR: SPARKLE_FEED_URL is required for production packaging." >&2
     exit 1
+  fi
+  if [[ -z "$SPARKLE_PUBLIC_ED_KEY" && -n "$SPARKLE_PRIVATE_KEY_FILE" ]]; then
+    SPARKLE_PUBLIC_ED_KEY="$(derive_sparkle_public_key)"
   fi
   if [[ -z "$SPARKLE_PUBLIC_ED_KEY" ]]; then
     if [[ "$ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN" == "1" && "$SIGNING_MODE" == "adhoc" ]]; then
@@ -93,7 +112,7 @@ fi
 
 APP_BUNDLE="$ROOT_DIR/${APP_NAME}.app"
 EXECUTABLE_TARGET="$APP_BUNDLE/Contents/MacOS/$PRODUCT_NAME"
-ARCH_LIST=( ${ARCHES:-} )
+ARCH_LIST=( ${EXPLICIT_ARCHES:-${ARCHES:-}} )
 if [[ "$APP_VARIANT" == "dev" && -d "$ROOT_DIR/Scripts/Assets/AppIconDev.icon" ]]; then
   APP_ICON_SOURCE_DIR="$ROOT_DIR/Scripts/Assets/AppIconDev.icon"
 else
@@ -156,6 +175,61 @@ if compgen -G "$BUILD_DIR/*.framework" >/dev/null; then
   cp -R "$BUILD_DIR/"*.framework "$APP_BUNDLE/Contents/Frameworks/"
   chmod -R a+rX "$APP_BUNDLE/Contents/Frameworks"
   /usr/bin/install_name_tool -add_rpath "@executable_path/../Frameworks" "$EXECUTABLE_TARGET" || true
+
+  if [[ ${#ARCH_LIST[@]} -gt 1 ]]; then
+    while IFS= read -r -d '' copied_executable; do
+      copied_archs="$(/usr/bin/lipo -archs "$copied_executable" 2>/dev/null || true)"
+      if [[ -z "$copied_archs" ]]; then
+        continue
+      fi
+
+      has_all_requested_arches=1
+      for arch in "${ARCH_LIST[@]}"; do
+        if [[ " $copied_archs " != *" $arch "* ]]; then
+          has_all_requested_arches=0
+          break
+        fi
+      done
+
+      if [[ "$has_all_requested_arches" == "1" ]]; then
+        continue
+      fi
+
+      relative_path="${copied_executable#"$APP_BUNDLE/Contents/Frameworks/"}"
+      framework_executables=()
+      missing_arch_binary=0
+      LIPO_SLICE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/slashgrab-framework-lipo.XXXXXX")"
+
+      for arch in "${ARCH_LIST[@]}"; do
+        arch_executable="$(build_dir_for_frameworks "$arch")/$relative_path"
+        if [[ ! -f "$arch_executable" ]]; then
+          missing_arch_binary=1
+          break
+        fi
+
+        source_archs="$(/usr/bin/lipo -archs "$arch_executable" 2>/dev/null || true)"
+        if [[ " $source_archs " != *" $arch "* ]]; then
+          missing_arch_binary=1
+          break
+        fi
+
+        if [[ "$source_archs" == "$arch" ]]; then
+          framework_executables+=("$arch_executable")
+        else
+          slice_path="$LIPO_SLICE_DIR/${arch}-${relative_path//\//_}"
+          /usr/bin/lipo "$arch_executable" -thin "$arch" -output "$slice_path"
+          framework_executables+=("$slice_path")
+        fi
+      done
+
+      if [[ "$missing_arch_binary" == "0" ]]; then
+        /usr/bin/lipo -create "${framework_executables[@]}" -output "$copied_executable"
+        chmod +x "$copied_executable"
+      fi
+
+      rm -rf "$LIPO_SLICE_DIR"
+    done < <(find "$APP_BUNDLE/Contents/Frameworks" -type f -perm -111 -print0)
+  fi
 fi
 
 if compgen -G "$BUILD_DIR/${PRODUCT_NAME}_${PRODUCT_NAME}.*" >/dev/null; then
