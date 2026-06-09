@@ -11,13 +11,18 @@
 
 ## Release Flow
 
+Every public release ships two artifacts:
+
+- `Slashgrab-X.Y.Z.dmg` for manual user installation.
+- `Slashgrab-X.Y.Z.zip` for Sparkle automatic updates and `appcast.xml`.
+
 1. Update `version.env`.
 2. Add release notes to `CHANGELOG.md` under the exact version.
 3. Run `./Scripts/build_and_run.sh --verify --test`.
 4. Run `./Scripts/build_and_run.sh --production --release --verify`.
-5. Run `./Scripts/sign-and-notarize.sh`.
-6. Run `./Scripts/make_dmg.sh --notarize`.
-7. Create the GitHub release and upload `Slashgrab-X.Y.Z.zip` and `Slashgrab-X.Y.Z.dmg`.
+5. Run `./Scripts/sign-and-notarize.sh` to create the notarized Sparkle zip.
+6. Run `./Scripts/make_dmg.sh --notarize` to create the notarized manual-install DMG.
+7. Create the GitHub release and upload both `Slashgrab-X.Y.Z.dmg` and `Slashgrab-X.Y.Z.zip`.
 8. Run `./Scripts/make_appcast.sh Slashgrab-X.Y.Z.zip`.
 9. Confirm `appcast.xml` contains an enclosure for `Slashgrab-X.Y.Z.zip` with `sparkle:edSignature`.
 10. Commit and push `appcast.xml`.
