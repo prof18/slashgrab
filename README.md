@@ -57,9 +57,9 @@ That makes it useful for developers, designers, QA, support, and anyone else who
 
 - macOS 13 or newer
 
-Release builds will be published on the repository's [GitHub Releases](../../releases) page.
+Download the latest `Slashgrab.dmg` from the repository's [GitHub Releases](../../releases) page.
 
-There is no public release yet. Until the first release is available, build and run the development app locally.
+The zip asset is used for Sparkle automatic updates.
 
 ## Build Locally
 

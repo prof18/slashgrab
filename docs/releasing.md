@@ -16,10 +16,11 @@
 3. Run `./Scripts/build_and_run.sh --verify --test`.
 4. Run `./Scripts/build_and_run.sh --production --release --verify`.
 5. Run `./Scripts/sign-and-notarize.sh`.
-6. Create the GitHub release and upload `Slashgrab-X.Y.Z.zip`.
-7. Run `./Scripts/make_appcast.sh Slashgrab-X.Y.Z.zip`.
-8. Confirm `appcast.xml` contains an enclosure for `Slashgrab-X.Y.Z.zip` with `sparkle:edSignature`.
-9. Commit and push `appcast.xml`.
+6. Run `./Scripts/make_dmg.sh --notarize`.
+7. Create the GitHub release and upload `Slashgrab-X.Y.Z.zip` and `Slashgrab-X.Y.Z.dmg`.
+8. Run `./Scripts/make_appcast.sh Slashgrab-X.Y.Z.zip`.
+9. Confirm `appcast.xml` contains an enclosure for `Slashgrab-X.Y.Z.zip` with `sparkle:edSignature`.
+10. Commit and push `appcast.xml`.
 
 ## Validation
 
@@ -30,6 +31,8 @@ codesign -dvvv --entitlements :- Slashgrab.app
 codesign --verify --verbose=2 Slashgrab.app
 spctl -a -t exec -vv Slashgrab.app
 xcrun stapler validate Slashgrab.app
+spctl -a -t open --context context:primary-signature -vv Slashgrab-X.Y.Z.dmg
+xcrun stapler validate Slashgrab-X.Y.Z.dmg
 plutil -p Slashgrab.app/Contents/Info.plist
 ```
 
