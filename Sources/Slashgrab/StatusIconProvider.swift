@@ -37,8 +37,7 @@ enum StatusIconProvider {
     }
 
     private static func loadImage(_ kind: Kind) -> NSImage? {
-        let bundles: [Bundle] = [Bundle.module, .main]
-        for bundle in bundles {
+        for bundle in ResourceBundleLocator.bundles {
             if let url = resourceURL(
                 in: bundle,
                 name: kind.resourceName,
