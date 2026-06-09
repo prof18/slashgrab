@@ -1,7 +1,7 @@
 # Slashgrab
 
 <p align="center">
-  <img src="docs/assets/slashgrab-icon-256.png" alt="Slashgrab" width="160" />
+  <img src="docs/assets/slashgrab-icon-256.png?v=2" alt="Slashgrab" width="160" />
 </p>
 
 
