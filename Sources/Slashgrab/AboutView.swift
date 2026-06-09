@@ -95,7 +95,7 @@ struct AboutView: View {
                 id: "website",
                 title: "Website",
                 systemImage: "globe",
-                rawURL: "https://www.marcogomiero.com/"
+                rawURL: "https://slashgrab.app/"
             ),
         ].compactMap { $0 }
     }

@@ -1,7 +1,7 @@
 # Slashgrab
 
 <p align="center">
-  <img src="docs/assets/slashgrab-icon-256.png?v=2" alt="Slashgrab" width="160" />
+  <img src="assets/slashgrab-icon-256.png?v=2" alt="Slashgrab" width="160" />
 </p>
 
 
@@ -9,7 +9,7 @@ Slashgrab is a tiny macOS menu bar utility that turns dropped files and folders 
 
 Drop something on the menu bar icon, then paste the path wherever you need it.
 
-![Slashgrab demo](docs/assets/slashgrab-demo.gif)
+![Slashgrab demo](assets/slashgrab-demo.gif)
 
 ## Why
 
@@ -56,6 +56,7 @@ That makes it useful for developers, designers, QA, support, and anyone else who
 ## Get Slashgrab
 
 - macOS 13 or newer
+- Website: [slashgrab.app](https://slashgrab.app/)
 
 Download the latest `Slashgrab.dmg` from the repository's [GitHub Releases](../../releases) page.
 

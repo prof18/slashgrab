@@ -19,7 +19,7 @@ Observed Shellporter pieces to mirror:
 - `Scripts/package_app.sh` builds the `.app`, writes `Info.plist`, embeds Sparkle, signs nested frameworks, and verifies codesigning.
 - `Scripts/sign-and-notarize.sh` builds universal, signs, notarizes with `xcrun notarytool`, staples, validates, and creates the final zip.
 - `Scripts/make_appcast.sh` uses Sparkle `generate_appcast` to update `appcast.xml`.
-- `docs/releasing.md` documents the release checklist.
+- `RELEASING.md` documents the release checklist.
 - `version.env` stores `MARKETING_VERSION` and `BUILD_NUMBER`.
 
 ## Slashgrab Release Identity
@@ -86,7 +86,7 @@ Add:
 - `version.env`
 - `appcast.xml`
 - `CHANGELOG.md`
-- `docs/releasing.md`
+- `RELEASING.md`
 
 ## Environment Variables
 

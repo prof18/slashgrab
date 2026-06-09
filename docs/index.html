@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slashgrab — Drop files. Grab paths.</title>
+  <meta name="description" content="Slashgrab is a tiny macOS menu-bar utility. Drop a file or folder on the icon and the path is copied to your clipboard — instantly." />
+  <link rel="canonical" href="https://slashgrab.app/" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Slashgrab — Drop files. Grab paths." />
+  <meta property="og:description" content="A tiny macOS menu-bar utility. Drop a file or folder on the icon and the path is copied to your clipboard — instantly." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://slashgrab.app/" />
+  <meta property="og:site_name" content="Slashgrab" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://slashgrab.app/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Slashgrab — a macOS menu-bar utility for copying file paths" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Slashgrab — Drop files. Grab paths." />
+  <meta name="twitter:description" content="A tiny macOS menu-bar utility. Drop a file or folder on the icon and the path is copied to your clipboard — instantly." />
+  <meta name="twitter:image" content="https://slashgrab.app/og-image.png" />
+  <meta name="twitter:image:alt" content="Slashgrab — a macOS menu-bar utility for copying file paths" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Slashgrab",
+    "operatingSystem": "macOS 13 or newer",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "A tiny macOS menu-bar utility that turns dropped files and folders into copied path text.",
+    "url": "https://slashgrab.app/",
+    "downloadUrl": "https://github.com/prof18/slashgrab/releases/latest",
+    "softwareHelp": "https://github.com/prof18/slashgrab",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- ============================ NAV ============================ -->
+  <nav class="lp-nav">
+    <div class="lp">
+      <a class="lp-brand" href="#top" style="text-decoration:none">
+        <span class="mk"><svg class="glyph" width="17" height="17" viewBox="0 0 22 22" aria-hidden="true" style="color:#fff"><rect x="2.6" y="5.6" width="16.8" height="10.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="8.9" y1="13.9" x2="13.1" y2="8.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+        Slashgrab
+      </a>
+      <div class="lp-nav-actions">
+        <button class="lp-nav-toggle" type="button" aria-expanded="false" aria-controls="lp-nav-menu" aria-label="Open menu">
+          <span class="lp-nav-toggle-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <a class="cta lp-nav-cta" href="#get">Get Slashgrab</a>
+      </div>
+      <div class="lp-nav-links" id="lp-nav-menu">
+        <a href="#why">Why</a>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#formats">Formats</a>
+        <a class="gh" href="https://github.com/prof18/slashgrab" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.7c-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.34 9.34 0 015 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.59.69.49A10.02 10.02 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg> GitHub</a>
+        <a class="cta" href="#get">Get Slashgrab</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============================ HERO ============================ -->
+  <header class="hero lp" id="top">
+    <p class="kicker">macOS menu-bar utility</p>
+    <h1>Drop files.<br />Grab <span class="slash">paths.</span></h1>
+    <p class="sub">
+      Slashgrab lives quietly in your menu bar. Drag any file or folder onto its icon and
+      the path lands on your clipboard — <b>instantly</b>. No Finder detour, no extra window.
+    </p>
+    <div class="hero-cta">
+      <a class="bigbtn primary" href="https://github.com/prof18/slashgrab/releases/latest" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="1.8"/><path d="M2 20h20"/><path d="M10 16.5l-.6 3.5M14 16.5l.6 3.5"/></svg> Download for macOS</a>
+    </div>
+    <div class="hero-meta">
+      <span>macOS 13 or newer</span><span class="dot"></span>
+      <span>Native menu-bar app</span><span class="dot"></span>
+      <span>Drop · copy · paste</span>
+    </div>
+
+    <div class="demo-block">
+      <div class="demo-cap"><span class="live"></span> Interactive demo — a re-creation of how the app works, not the real app</div>
+      <!-- interactive menu-bar simulation, wired by app.js -->
+      <div id="demo-mount">
+        <div class="stage" id="demo-stage">
+          <div class="menubar" id="demo-menubar">
+            <div class="mb-left">
+              <span class="mb-app"></span>
+              <span class="mb-app">Finder</span>
+              <span class="mb-menu">File</span>
+              <span class="mb-menu">Edit</span>
+              <span class="mb-menu">View</span>
+            </div>
+            <div class="mb-spacer"></div>
+            <div class="mb-right">
+              <span class="mb-extra"><svg width="20" height="12" viewBox="0 0 26 13" fill="none" aria-hidden="true"><rect x="0.7" y="0.7" width="21" height="11.6" rx="3" stroke="currentColor" stroke-width="1.1" opacity="0.7"/><rect x="2.4" y="2.4" width="13" height="8.2" rx="1.6" fill="currentColor"/><path d="M23.4 4.4 v4.2 a2 2 0 0 0 1.4-1.9 v-0.4 a2 2 0 0 0-1.4-1.9z" fill="currentColor" opacity="0.7"/></svg></span>
+              <span class="mb-extra"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 6.8 A10 10 0 0 1 15.5 6.8"/><path d="M4.8 9.4 A6.4 6.4 0 0 1 13.2 9.4"/><path d="M7 12 A2.8 2.8 0 0 1 11 12"/><circle cx="9" cy="13.6" r="0.7" fill="currentColor" stroke="none"/></svg></span>
+              <span class="mb-extra"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="7.6" cy="7.6" r="5"/><path d="M11.4 11.4 L16 16"/></svg></span>
+              <!-- Slashgrab status item -->
+              <div class="statusitem" id="demo-statusitem" title="Slashgrab">
+                <span class="hl"></span>
+                <svg class="glyph" id="demo-glyph" width="18" height="18" viewBox="0 0 22 22" aria-hidden="true"><rect x="2.6" y="5.6" width="16.8" height="10.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="8.9" y1="13.9" x2="13.1" y2="8.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+              </div>
+              <span class="mb-extra"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2" y="3.2" width="14" height="5.0" rx="2.5" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9.8" width="14" height="5.0" rx="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="6" cy="5.7" r="1.1" fill="currentColor"/><circle cx="12" cy="12.3" r="1.1" fill="currentColor"/></svg></span>
+              <span class="mb-clock">Sat 9:41</span>
+            </div>
+            <!-- toast injected here by app.js -->
+          </div>
+
+          <div class="desktop">
+            <div class="hint" id="demo-hint">
+              <div class="big">Drag a file up to the&nbsp;<span style="display:inline-flex;vertical-align:-4px"><svg class="glyph" width="17" height="17" viewBox="0 0 22 22" aria-hidden="true" style="color:#fff"><rect x="2.6" y="5.6" width="16.8" height="10.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="8.9" y1="13.9" x2="13.1" y2="8.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>&nbsp;icon</div>
+              <div>Drop it and watch the path get grabbed.</div>
+            </div>
+            <div class="files" id="demo-files"><!-- files injected by app.js --></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================ WHY ============================ -->
+  <section class="lp-sec lp" id="why">
+    <div class="lp-sec-head">
+      <p class="eyebrow">Why I built it</p>
+      <h2>Getting a path was always more work than it should be.</h2>
+      <p>
+        When I needed to paste a path into an AI agent, a chat, a terminal command, a bug report
+        or a config file, there was always a detour. Slashgrab removes it.
+      </p>
+    </div>
+    <div class="why-grid">
+      <div class="card why-card before">
+        <span class="wc-tag">Before — the detour</span>
+        <ul class="why-steps">
+          <li><span class="n">1</span><span class="txt">Hunt for the file in Finder</span></li>
+          <li><span class="n">2</span><span class="txt">Drag it into Terminal, or dig through a copy-path menu</span></li>
+          <li><span class="n">3</span><span class="txt">Copy the result</span></li>
+          <li><span class="n">4</span><span class="txt">Switch back to where you actually needed it</span></li>
+        </ul>
+        <p class="wc-foot">Four steps, two context switches, every single time.</p>
+      </div>
+      <div class="card why-card after">
+        <span class="wc-tag">After — with Slashgrab</span>
+        <ul class="why-steps">
+          <li><span class="n">1</span><span class="txt">Drag a file or folder</span></li>
+          <li><span class="n">2</span><span class="txt">Drop it on the Slashgrab menu-bar icon</span></li>
+          <li><span class="n">3</span><span class="txt">Paste the copied path</span></li>
+        </ul>
+        <p class="wc-foot">No command palette. No Finder service. No temporary shelf.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== HOW IT WORKS + FEATURES (merged) =================== -->
+  <section class="lp-sec lp" id="how">
+    <div class="lp-sec-head">
+      <p class="eyebrow">How it works</p>
+      <h2>Drop file → copy path → paste path.</h2>
+      <p>The workflow is intentionally small — and everything around it stays out of your way.</p>
+    </div>
+    <div class="steps">
+      <div class="card step">
+        <span class="step-no">01</span>
+        <span class="step-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="M8 10l4 4 4-4"/><path d="M5 20h14"/></svg></span>
+        <h3>Drag</h3>
+        <p>Grab any file or folder from Finder, the Desktop, or another app. Multiple items work too.</p>
+      </div>
+      <div class="card step">
+        <span class="step-no">02</span>
+        <span class="step-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="11" rx="2.5"/><path d="M9.5 13l4-5.5"/><path d="M8 20h8"/></svg></span>
+        <h3>Drop</h3>
+        <p>Let go over the Slashgrab icon in the menu bar. It arms on hover and confirms with a quick pulse.</p>
+      </div>
+      <div class="card step">
+        <span class="step-no">03</span>
+        <span class="step-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><rect x="8.5" y="2.5" width="7" height="4" rx="1.4"/><path d="M9 12h6"/><path d="M9 15.5h4"/></svg></span>
+        <h3>Paste</h3>
+        <p>The formatted path is already on your clipboard. Paste it wherever you need — ⌘V and you’re done.</p>
+      </div>
+    </div>
+
+    <figure class="demo-gif-wrap">
+      <img src="assets/slashgrab-demo.gif" alt="Screen recording of Slashgrab copying a file path after a file is dropped on the menu bar icon." width="1000" height="370" loading="lazy" decoding="async" />
+      <figcaption class="demo-gif-cap">Screen recording — the real app on macOS</figcaption>
+    </figure>
+
+    <div class="flow-divide" id="features"><span class="flow-label">Everything it does</span></div>
+
+    <div class="feat-grid">
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 9h18"/><circle cx="16.5" cy="7" r=".6" fill="currentColor"/><circle cx="18.5" cy="7" r=".6" fill="currentColor"/></svg></span>
+        <h3>Menu-bar drop target</h3>
+        <p>Drop files or folders directly onto the Slashgrab icon — no window to open first.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 5l3 3-8 8-3-3z"/><path d="M5 19l3-1-2-2z"/><path d="M14 7l3 3"/></svg></span>
+        <h3>Instant clipboard copy</h3>
+        <p>The formatted path is copied the moment the drop succeeds. Nothing else to click.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l-3 4 3 4"/><path d="M17 8l3 4-3 4"/><path d="M13.5 6l-3 12"/></svg></span>
+        <h3>Multiple path formats</h3>
+        <p>Shell-escaped, plain, quoted, file URL or home-relative. Pick your default once.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 16.5l8 4 8-4"/></svg></span>
+        <h3>Multi-item support</h3>
+        <p>Drop several items at once and Slashgrab formats the whole set in your chosen style.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span>
+        <h3>Recent paths</h3>
+        <p>Reopen the menu to copy a recently grabbed path again — no need to re-drag.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></span>
+        <h3>Drop feedback</h3>
+        <p>A quick, restrained visual confirmation every time a path is copied.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a1.5 1.5 0 011.5 1.5v13A1.5 1.5 0 0118 20h-4"/><path d="M4 12h10"/><path d="M10.5 8.5L14 12l-3.5 3.5"/></svg></span>
+        <h3>Launch at login</h3>
+        <p>Keep Slashgrab ready in the background without starting it by hand.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 10-2.3 5.6"/><path d="M20 6.5V12h-5.5"/></svg></span>
+        <h3>Automatic updates</h3>
+        <p>Slashgrab checks for new versions and keeps itself up to date — nothing to download by hand.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FORMATS ============================ -->
+  <section class="lp-sec lp" id="formats">
+    <div class="lp-sec-head">
+      <p class="eyebrow">Path formats</p>
+      <h2>One drop, your format.</h2>
+      <p>Choose how Slashgrab writes the path once — it formats every drop that way until you change it.</p>
+    </div>
+    <div class="card fmt-card">
+      <div class="fmt-list" id="fmt-list">
+        <button class="fmt-opt on" data-key="shell">
+          <span class="fo-name"><span class="tick"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span>Shell Escaped</span>
+          <span class="fo-desc">Safe to paste into a terminal</span>
+        </button>
+        <button class="fmt-opt" data-key="path">
+          <span class="fo-name"><span class="tick"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span>Path</span>
+          <span class="fo-desc">The plain absolute path</span>
+        </button>
+        <button class="fmt-opt" data-key="quoted">
+          <span class="fo-name"><span class="tick"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span>Quoted Path</span>
+          <span class="fo-desc">Wrapped in double quotes</span>
+        </button>
+        <button class="fmt-opt" data-key="url">
+          <span class="fo-name"><span class="tick"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span>File URL</span>
+          <span class="fo-desc">RFC-8089 file:// URL</span>
+        </button>
+        <button class="fmt-opt" data-key="home">
+          <span class="fo-name"><span class="tick"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span>Home-relative Path</span>
+          <span class="fo-desc">Collapses home to ~</span>
+        </button>
+      </div>
+      <div class="fmt-view">
+        <div class="fmt-src">
+          <svg class="glyph" width="16" height="16" viewBox="0 0 22 22" aria-hidden="true" style="color:var(--ink-faint)"><rect x="2.6" y="5.6" width="16.8" height="10.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="8.9" y1="13.9" x2="13.1" y2="8.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          Dropped: <span class="fs-name">Q3 Report.pdf</span>
+        </div>
+        <span class="fv-label">Copied to clipboard</span>
+        <div class="fmt-out"><span id="fmt-out-text">/Users/marco/Design/Q3\ Report.pdf</span>
+          <button class="fo-copy" id="fmt-copy"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 5l3 3-8 8-3-3z"/><path d="M5 19l3-1-2-2z"/><path d="M14 7l3 3"/></svg>Copy</button>
+        </div>
+        <p class="fmt-note" id="fmt-note"><b>Shell Escaped.</b> Spaces and special characters are backslash-escaped, so it pastes straight into a shell command.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ GET ============================ -->
+  <section class="lp-sec lp" id="get">
+    <div class="get-wrap">
+      <div class="mk-lg"><svg class="glyph" width="38" height="38" viewBox="0 0 22 22" aria-hidden="true" style="color:#fff"><rect x="2.6" y="5.6" width="16.8" height="10.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="8.9" y1="13.9" x2="13.1" y2="8.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+      <h2>Get Slashgrab</h2>
+      <p>A tiny utility that earns its place in your menu bar. macOS 13 or newer.</p>
+      <div class="hero-cta">
+        <a class="bigbtn primary" href="https://github.com/prof18/slashgrab/releases/latest" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="1.8"/><path d="M2 20h20"/><path d="M10 16.5l-.6 3.5M14 16.5l.6 3.5"/></svg> Download for macOS</a>
+        <a class="bigbtn" href="https://github.com/prof18/slashgrab" target="_blank" rel="noopener"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.7c-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.34 9.34 0 015 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9l-.01 2.82c0 .27.18.59.69.49A10.02 10.02 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg> Star on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="lp-foot">
+    <div class="lp">
+      <div class="ft-brand">
+        <span class="mk"><svg class="glyph" width="15" height="15" viewBox="0 0 22 22" aria-hidden="true" style="color:#fff"><rect x="2.6" y="5.6" width="16.8" height="10.8" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="8.9" y1="13.9" x2="13.1" y2="8.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+        Slashgrab
+      </div>
+      <span class="ft-meta">© 2026 <a href="https://www.marcogomiero.com" target="_blank" rel="noopener">Marco Gomiero</a></span>
+      <div class="ft-links">
+        <a href="https://github.com/prof18/slashgrab" target="_blank" rel="noopener">GitHub</a>
+        <a href="#top">Back to top</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
