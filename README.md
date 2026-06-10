@@ -58,7 +58,7 @@ That makes it useful for developers, designers, QA, support, and anyone else who
 - macOS 13 or newer
 - Website: [slashgrab.app](https://slashgrab.app/)
 
-Download the latest `Slashgrab.dmg` from the repository's [GitHub Releases](../../releases) page.
+Download the latest `Slashgrab.dmg` directly from [GitHub Releases](https://github.com/prof18/slashgrab/releases/latest/download/Slashgrab.dmg).
 
 The zip asset is used for Sparkle automatic updates.
 
