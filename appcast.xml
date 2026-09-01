@@ -14,7 +14,9 @@
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
             <description><![CDATA[<h2>Slashgrab 0.0.3</h2>
 <ul>
-<li>Add Finder <strong>Copy Path</strong> actions to <strong>Recently grabbed</strong>, keeping copy history consistent with menu-bar drops.</li>
+<li>Add <strong>Copy Path</strong> to Finder’s contextual menu, using the <strong>Copy As</strong> format selected in Slashgrab.</li>
+<li>Record Finder <strong>Copy Path</strong> actions in <strong>Recently grabbed</strong>, keeping copy history consistent with menu-bar drops.</li>
+<li>Add a dedicated Settings window for launch at login, Finder extension setup, updates, and app information.</li>
 </ul>
 <p><a href="https://github.com/prof18/slashgrab/blob/main/CHANGELOG.md">View full changelog</a></p>
 ]]></description>

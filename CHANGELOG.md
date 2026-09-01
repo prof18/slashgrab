@@ -2,7 +2,9 @@
 
 ## 0.0.3
 
-- Add Finder **Copy Path** actions to **Recently grabbed**, keeping copy history consistent with menu-bar drops.
+- Add **Copy Path** to Finder’s contextual menu, using the **Copy As** format selected in Slashgrab.
+- Record Finder **Copy Path** actions in **Recently grabbed**, keeping copy history consistent with menu-bar drops.
+- Add a dedicated Settings window for launch at login, Finder extension setup, updates, and app information.
 
 ## 0.0.2
 
