@@ -10,6 +10,12 @@ export SWIFTPM_MODULECACHE_OVERRIDE="$ROOT_DIR/.build/module-cache"
 source "$ROOT_DIR/version.env"
 "$ROOT_DIR/Scripts/generate_project.sh"
 
+CHANGELOG_HTML="$("$ROOT_DIR/Scripts/changelog-to-html.sh" "$MARKETING_VERSION")"
+if [[ "$CHANGELOG_HTML" == *'**'* ]]; then
+  echo "ERROR: Generated changelog HTML contains unrendered bold Markdown." >&2
+  exit 1
+fi
+
 swift test -q
 
 xcodebuild \

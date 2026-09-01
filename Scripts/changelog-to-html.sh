@@ -33,6 +33,16 @@ HTML
 fi
 
 echo "<h2>Slashgrab $VERSION</h2>"
+
+render_inline_markdown() {
+  local text=$1
+  text="${text//&/&amp;}"
+  text="${text//</&lt;}"
+  text="${text//>/&gt;}"
+  /usr/bin/printf '%s\n' "$text" \
+    | /usr/bin/sed -E 's/\*\*([^*]+)\*\*/<strong>\1<\/strong>/g'
+}
+
 in_list=false
 while IFS= read -r line; do
   if [[ "$line" =~ ^-\  ]]; then
@@ -41,9 +51,7 @@ while IFS= read -r line; do
       in_list=true
     fi
     item="${line#- }"
-    item="${item//&/&amp;}"
-    item="${item//</&lt;}"
-    item="${item//>/&gt;}"
+    item="$(render_inline_markdown "$item")"
     echo "<li>$item</li>"
   else
     if [[ "$in_list" == true ]]; then
@@ -51,9 +59,7 @@ while IFS= read -r line; do
       in_list=false
     fi
     if [[ -n "$line" ]]; then
-      line="${line//&/&amp;}"
-      line="${line//</&lt;}"
-      line="${line//>/&gt;}"
+      line="$(render_inline_markdown "$line")"
       echo "<p>$line</p>"
     fi
   fi
