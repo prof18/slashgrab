@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.5
+
+- Restore Finder **Copy Path** after updating from 0.0.4.
+- Prevent stale Finder extension versions from adding duplicate **Copy Path** entries after future updates.
+
 ## 0.0.4
 
 - Add **Copy Path** to Finder’s contextual menu, using the **Copy As** format selected in Slashgrab.

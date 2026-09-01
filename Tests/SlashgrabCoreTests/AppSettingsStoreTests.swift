@@ -52,6 +52,21 @@ struct AppSettingsStoreTests {
         #expect(SharedSettings.makePathFormatReader(appGroupIdentifier: nil) == nil)
         #expect(SharedSettings.makePathFormatReader(appGroupIdentifier: "") == nil)
         #expect(SharedSettings.makePathFormatReader(appGroupIdentifier: "$(APP_GROUP_ID)") == nil)
+        #expect(SharedSettings.makeFinderExtensionVersionStore(appGroupIdentifier: nil) == nil)
+        #expect(SharedSettings.makeFinderExtensionVersionStore(appGroupIdentifier: "") == nil)
+        #expect(SharedSettings.makeFinderExtensionVersionStore(appGroupIdentifier: "$(APP_GROUP_ID)") == nil)
+    }
+
+    @Test("Finder extension version store hides stale builds")
+    func finderExtensionVersionStore() {
+        let store = SharedFinderExtensionVersionStore(defaults: makeDefaults())
+
+        #expect(store.isActive(version: "0.0.4 (4)"))
+
+        store.activate(version: "0.0.5 (5)")
+
+        #expect(store.isActive(version: "0.0.5 (5)"))
+        #expect(!store.isActive(version: "0.0.4 (4)"))
     }
 
     @Test("Shared path format reader observes changes after initialization")

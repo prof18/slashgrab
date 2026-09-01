@@ -8,6 +8,8 @@ final class FinderSync: FIFinderSync {
         historyStore: SharedSettings.makeStore()
     )
     private let pathFormatReader = SharedSettings.makePathFormatReader()
+    private let versionStore = SharedSettings.makeFinderExtensionVersionStore()
+    private let version = SharedSettings.finderExtensionVersion()
 
     override init() {
         super.init()
@@ -20,7 +22,8 @@ final class FinderSync: FIFinderSync {
     }
 
     override func menu(for menuKind: FIMenuKind) -> NSMenu? {
-        guard menuKind == .contextualMenuForItems else {
+        guard menuKind == .contextualMenuForItems,
+              version.map({ versionStore?.isActive(version: $0) ?? true }) ?? true else {
             return nil
         }
 

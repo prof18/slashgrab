@@ -21,6 +21,26 @@ public enum SharedSettings {
             .map(SharedPathFormatReader.init(defaults:))
     }
 
+    public static func makeFinderExtensionVersionStore(bundle: Bundle = .main) -> SharedFinderExtensionVersionStore? {
+        makeFinderExtensionVersionStore(appGroupIdentifier: appGroupIdentifier(in: bundle))
+    }
+
+    public static func makeFinderExtensionVersionStore(
+        appGroupIdentifier: String?
+    ) -> SharedFinderExtensionVersionStore? {
+        makeDefaults(appGroupIdentifier: appGroupIdentifier)
+            .map(SharedFinderExtensionVersionStore.init(defaults:))
+    }
+
+    public static func finderExtensionVersion(bundle: Bundle = .main) -> String? {
+        guard let shortVersion = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+              let buildNumber = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String else {
+            return nil
+        }
+
+        return "\(shortVersion) (\(buildNumber))"
+    }
+
     private static func appGroupIdentifier(in bundle: Bundle) -> String? {
         bundle.object(forInfoDictionaryKey: appGroupIdentifierInfoKey) as? String
     }
@@ -33,6 +53,28 @@ public enum SharedSettings {
         }
 
         return UserDefaults(suiteName: appGroupIdentifier)
+    }
+}
+
+public final class SharedFinderExtensionVersionStore: @unchecked Sendable {
+    private static let activeVersionKey = "activeFinderExtensionVersion"
+
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults) {
+        self.defaults = defaults
+    }
+
+    public func activate(version: String) {
+        defaults.set(version, forKey: Self.activeVersionKey)
+    }
+
+    public func isActive(version: String) -> Bool {
+        guard let activeVersion = defaults.string(forKey: Self.activeVersionKey) else {
+            return true
+        }
+
+        return activeVersion == version
     }
 }
 
