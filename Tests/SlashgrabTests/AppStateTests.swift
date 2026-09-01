@@ -31,7 +31,29 @@ struct AppStateTests {
         #expect(clipboard.writtenStrings == ["\"/Users/mg/Desktop/Test File.txt\""])
         #expect(appState.history.entries == ["\"/Users/mg/Desktop/Test File.txt\""])
         #expect(settings.loadHistory().entries == ["\"/Users/mg/Desktop/Test File.txt\""])
+        #expect(sharedSettings.loadHistory().entries == ["\"/Users/mg/Desktop/Test File.txt\""])
         #expect(sharedSettings.selectedFormat == .doubleQuoted)
+    }
+
+    @Test("Finder extension history is merged and refreshed while the app is running")
+    func finderExtensionHistoryIsRefreshed() {
+        let settings = AppSettingsStore(defaults: makeDefaults())
+        settings.addHistoryEntry("existing")
+        let sharedSettings = AppSettingsStore(defaults: makeDefaults())
+        let appState = AppState(
+            settings: settings,
+            sharedSettings: sharedSettings,
+            clipboardWriter: SpyClipboardWriter(),
+            launchAtLoginController: FakeLaunchAtLoginController(),
+            finderExtensionController: FakeFinderExtensionController()
+        )
+
+        sharedSettings.addHistoryEntry("copied in Finder")
+        appState.refreshHistory()
+
+        #expect(appState.history.entries == ["copied in Finder", "existing"])
+        #expect(settings.loadHistory().entries == ["copied in Finder", "existing"])
+        #expect(sharedSettings.loadHistory().entries == ["copied in Finder", "existing"])
     }
 
     @Test("The current format is migrated to shared Finder settings")

@@ -34,11 +34,16 @@ final class AppState: ObservableObject {
         let storedFormat = settings.selectedFormat
         selectedFormat = storedFormat
         sharedSettings?.selectedFormat = storedFormat
-        history = settings.loadHistory()
+        history = Self.mergedHistory(
+            newest: sharedSettings?.loadHistory(),
+            existing: settings.loadHistory(),
+            limit: settings.historyLimit
+        )
         let currentLaunchAtLoginEnabled = launchAtLoginController.isEnabled
         launchAtLoginEnabled = currentLaunchAtLoginEnabled
         finderExtensionEnabled = finderExtensionController.isEnabled
         settings.launchAtLoginEnabled = currentLaunchAtLoginEnabled
+        persistHistory()
     }
 
     static func production() -> AppState {
@@ -75,9 +80,28 @@ final class AppState: ObservableObject {
         copyOutput(output, successMessage: "Copied again")
     }
 
+    func refreshHistory() {
+        guard let sharedSettings else {
+            history = settings.loadHistory()
+            return
+        }
+
+        let sharedHistory = sharedSettings.loadHistory()
+        guard sharedHistory != history else {
+            return
+        }
+
+        history = Self.mergedHistory(
+            newest: sharedHistory,
+            existing: history,
+            limit: settings.historyLimit
+        )
+        persistHistory()
+    }
+
     func clearHistory() {
         history.clear()
-        settings.saveHistory(history)
+        persistHistory()
     }
 
     func setLaunchAtLoginEnabled(_ enabled: Bool) {
@@ -110,8 +134,9 @@ final class AppState: ObservableObject {
     private func copyOutput(_ output: String, successMessage: String) -> Bool {
         do {
             try clipboardWriter.writeString(output)
+            refreshHistory()
             history.add(output)
-            settings.saveHistory(history)
+            persistHistory()
             showFeedback(.success(successMessage, detail: output))
             return true
         } catch {
@@ -131,6 +156,23 @@ final class AppState: ObservableObject {
                 }
             }
         }
+    }
+
+    private func persistHistory() {
+        settings.saveHistory(history)
+        sharedSettings?.saveHistory(history)
+    }
+
+    private static func mergedHistory(
+        newest: PathHistory?,
+        existing: PathHistory,
+        limit: Int
+    ) -> PathHistory {
+        var entries: [String] = []
+        for entry in (newest?.entries ?? []) + existing.entries where !entries.contains(entry) {
+            entries.append(entry)
+        }
+        return PathHistory(entries: entries, limit: limit)
     }
 }
 

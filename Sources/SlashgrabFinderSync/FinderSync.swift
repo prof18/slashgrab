@@ -3,7 +3,10 @@ import FinderSync
 import SlashgrabCore
 
 final class FinderSync: FIFinderSync {
-    private let copyAction = PathCopyAction(clipboardWriter: FinderClipboardWriter())
+    private let copyAction = PathCopyAction(
+        clipboardWriter: FinderClipboardWriter(),
+        historyStore: SharedSettings.makeStore()
+    )
     private let pathFormatReader = SharedSettings.makePathFormatReader()
 
     override init() {

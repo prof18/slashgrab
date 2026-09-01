@@ -33,6 +33,17 @@ struct AppSettingsStoreTests {
         #expect(reloaded.loadHistory().entries == ["two", "one"])
     }
 
+    @Test("Adding a history entry preserves ordering, deduplication, and the limit")
+    func addsHistoryEntry() {
+        let store = AppSettingsStore(defaults: makeDefaults())
+        store.historyLimit = 2
+        store.addHistoryEntry("one")
+        store.addHistoryEntry("two")
+        store.addHistoryEntry("one")
+
+        #expect(store.loadHistory().entries == ["one", "two"])
+    }
+
     @Test("Shared settings reject missing and unresolved app group identifiers")
     func invalidSharedSettingsIdentifiers() {
         #expect(SharedSettings.makeStore(appGroupIdentifier: nil) == nil)

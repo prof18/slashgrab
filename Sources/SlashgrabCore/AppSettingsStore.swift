@@ -55,4 +55,10 @@ public final class AppSettingsStore: @unchecked Sendable {
         defaults.set(history.limit, forKey: Key.historyLimit)
         defaults.set(history.entries, forKey: Key.historyEntries)
     }
+
+    public func addHistoryEntry(_ output: String) {
+        var history = loadHistory()
+        history.add(output)
+        saveHistory(history)
+    }
 }

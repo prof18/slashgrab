@@ -110,6 +110,7 @@ final class StatusItemController {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            appState.refreshHistory()
             appState.refreshFinderExtensionStatus()
             popover.contentSize = NSSize(width: 360, height: menuPopoverHeight)
             popover.show(relativeTo: anchorView.bounds, of: anchorView, preferredEdge: .minY)
