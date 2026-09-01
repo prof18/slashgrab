@@ -4,8 +4,8 @@ import SwiftUI
 struct MenuPopoverView: View {
     @ObservedObject var appState: AppState
     let buildInfo: AppBuildInfo
-    let updater: UpdaterControlling
-    let onAbout: () -> Void
+    let onPrepareSettings: () -> Void
+    let onOpenLegacySettings: () -> Void
     let onQuit: () -> Void
 
     var body: some View {
@@ -21,7 +21,6 @@ struct MenuPopoverView: View {
                 }
             }
             .pickerStyle(.menu)
-            .focusable(false)
 
             if let output = appState.lastCopiedOutput {
                 VStack(alignment: .leading, spacing: 6) {
@@ -40,26 +39,10 @@ struct MenuPopoverView: View {
 
             Divider()
 
-            Toggle("Launch at login", isOn: Binding(
-                get: { appState.launchAtLoginEnabled },
-                set: { appState.setLaunchAtLoginEnabled($0) }
-            ))
-
             HStack {
-                Button {
-                    updater.checkForUpdates()
-                } label: {
-                    Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath")
-                }
-                .disabled(!updater.canCheckForUpdates)
+                settingsButton
 
                 Spacer()
-
-                Button {
-                    onAbout()
-                } label: {
-                    Label("About", systemImage: "info.circle")
-                }
 
                 Button(role: .destructive) {
                     onQuit()
@@ -71,6 +54,17 @@ struct MenuPopoverView: View {
         .padding(16)
         .frame(width: 360)
         .font(.custom("Avenir Next", size: 13))
+    }
+
+    @ViewBuilder
+    private var settingsButton: some View {
+        if #available(macOS 14.0, *) {
+            OpenSettingsButton(onBeforeOpen: onPrepareSettings)
+        } else {
+            Button(action: onOpenLegacySettings) {
+                Label("Settings…", systemImage: "gearshape")
+            }
+        }
     }
 
     private var historyMenu: some View {
@@ -174,5 +168,21 @@ struct MenuPopoverView: View {
             }
         }
         .animation(.snappy(duration: 0.18), value: appState.feedback)
+    }
+}
+
+@available(macOS 14.0, *)
+private struct OpenSettingsButton: View {
+    @Environment(\.openSettings) private var openSettings
+
+    let onBeforeOpen: () -> Void
+
+    var body: some View {
+        Button {
+            onBeforeOpen()
+            openSettings()
+        } label: {
+            Label("Settings…", systemImage: "gearshape")
+        }
     }
 }

@@ -23,11 +23,12 @@ Slashgrab removes that detour:
 2. Drop it on the Slashgrab menu bar icon.
 3. Paste the copied path.
 
-No command palette, no Finder service, no temporary shelf, no extra window to manage.
+No command palette, no temporary shelf, and no extra window to manage.
 
 ## Features
 
 - **Menu bar drop target**: drop files or folders directly on the Slashgrab icon.
+- **Finder Copy Path**: right-click selected files or folders in Finder and choose **Copy Path**.
 - **Instant clipboard copy**: the formatted path is copied as soon as the drop succeeds.
 - **Multiple path formats**:
   - Shell Escaped
@@ -43,7 +44,9 @@ No command palette, no Finder service, no temporary shelf, no extra window to ma
 
 ## How It Works
 
-Slashgrab lives in the macOS menu bar. Click the icon to open settings, change the output format, copy recent paths again, toggle launch at login, check for updates, or quit.
+Slashgrab lives in the macOS menu bar. Click the icon to change the output format, copy recent paths again, open Settings, or quit. Launch-at-login, Finder integration, updates, and app information live in the Settings window.
+
+The bundled Finder extension adds **Copy Path** to Finder's contextual menu. It uses the same **Copy As** format selected in Slashgrab, including its multi-item separator. macOS requires Finder extensions to be enabled by the user: open Slashgrab's menu, choose **Settings…**, then open the Finder Extension settings from the General tab and enable Slashgrab.
 
 The default workflow is intentionally small:
 
@@ -69,7 +72,15 @@ Local builds are meant for development and testing. They create a separate `Slas
 Requirements:
 
 - macOS 13 or newer
-- Swift 6 toolchain
+- Xcode 26 or newer
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) 2.46 or newer (`brew install xcodegen`)
+- An Apple Development signing identity for running the Finder extension
+
+`project.yml` is the source of truth for the Xcode project. Generate it manually with:
+
+```bash
+./Scripts/generate_project.sh
+```
 
 Build and verify the side-by-side dev app:
 
@@ -83,7 +94,13 @@ Run it locally:
 ./Scripts/build_and_run.sh
 ```
 
-The dev build packages as `Slashgrab Dev.app` with bundle identifier `com.prof18.slashgrab.dev`, separate settings/history, disabled Sparkle checks, a `DEV` menu bar label, and a dev-badged app icon.
+The dev build packages as `Slashgrab Dev.app` with bundle identifier `com.prof18.slashgrab.dev`, separate settings/history, Sparkle disabled, a `DEV` menu bar label, and a dev-badged app icon. When launched, the script signs it with an Apple Development identity, installs it to `~/Applications`, registers the Finder extension from that stable location, and opens the installed copy. Set `DEV_APP_IDENTITY` or `DEV_INSTALL_DIR` in `.env` to override those defaults.
+
+Run the full SwiftPM and Xcode test suite with:
+
+```bash
+./Scripts/test.sh
+```
 
 ## Development Gate
 

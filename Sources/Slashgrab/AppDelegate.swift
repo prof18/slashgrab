@@ -2,17 +2,17 @@ import AppKit
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var appState: AppState?
+    let appState = AppState.production()
+    let updater = SparkleUpdater()
+
     private var statusItemController: StatusItemController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
-        let state = AppState.production()
-        let controller = StatusItemController(appState: state)
+        let controller = StatusItemController(appState: appState)
         controller.install()
 
-        appState = state
         statusItemController = controller
     }
 }

@@ -4,6 +4,8 @@
 DerivedData/
 xcuserdata/
 *.xcuserstate
+Slashgrab.xcodeproj/
 *.swp
 *.tmp
+*.profraw
 .env

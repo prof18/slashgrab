@@ -6,7 +6,11 @@ struct SlashgrabApp: App {
 
     var body: some Scene {
         Settings {
-            EmptyView()
+            SettingsView(
+                appState: appDelegate.appState,
+                buildInfo: .current(),
+                updater: appDelegate.updater
+            )
         }
     }
 }

@@ -1,15 +1,19 @@
+import Combine
 import Foundation
 import Sparkle
 
 @MainActor
-protocol UpdaterControlling: AnyObject {
+protocol UpdaterControlling: AnyObject, ObservableObject where ObjectWillChangePublisher == ObservableObjectPublisher {
     var canCheckForUpdates: Bool { get }
     func checkForUpdates()
 }
 
 @MainActor
 final class SparkleUpdater: NSObject, UpdaterControlling {
+    @Published private(set) var canCheckForUpdates = false
+
     private let controller: SPUStandardUpdaterController?
+    private var canCheckForUpdatesObservation: NSKeyValueObservation?
 
     override init() {
         if Bundle.main.nonEmptyInfoString("SUFeedURL") != nil,
@@ -23,11 +27,25 @@ final class SparkleUpdater: NSObject, UpdaterControlling {
             controller = nil
         }
         super.init()
-        controller?.startUpdater()
+
+        if let controller {
+            canCheckForUpdatesObservation = controller.updater.observe(
+                \.canCheckForUpdates,
+                options: [.initial, .new]
+            ) { [weak self] _, change in
+                guard let canCheckForUpdates = change.newValue else {
+                    return
+                }
+                Task { @MainActor [weak self] in
+                    self?.canCheckForUpdates = canCheckForUpdates
+                }
+            }
+            controller.startUpdater()
+        }
     }
 
-    var canCheckForUpdates: Bool {
-        controller?.updater.canCheckForUpdates ?? false
+    deinit {
+        canCheckForUpdatesObservation?.invalidate()
     }
 
     func checkForUpdates() {

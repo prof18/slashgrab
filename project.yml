@@ -1,0 +1,172 @@
+name: Slashgrab
+
+options:
+  minimumXcodeGenVersion: 2.46.0
+  deploymentTarget:
+    macOS: "13.0"
+  defaultConfig: Debug
+  xcodeVersion: "26.0"
+
+configs:
+  Debug: debug
+  Release: release
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.9.2
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    MARKETING_VERSION: ${MARKETING_VERSION}
+    CURRENT_PROJECT_VERSION: ${BUILD_NUMBER}
+  configs:
+    Debug:
+      APP_DISPLAY_NAME: Slashgrab Dev
+      APP_BUNDLE_ID: com.prof18.slashgrab.dev
+      APP_ICON_NAME: AppIconDev
+      APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.prof18.slashgrab.dev.shared
+      FINDER_EXTENSION_BUNDLE_ID: com.prof18.slashgrab.dev.findersync
+      FINDER_EXTENSION_DISPLAY_NAME: Slashgrab Dev Finder Extension
+    Release:
+      APP_DISPLAY_NAME: Slashgrab
+      APP_BUNDLE_ID: com.prof18.slashgrab
+      APP_ICON_NAME: AppIcon
+      APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.prof18.slashgrab.shared
+      FINDER_EXTENSION_BUNDLE_ID: com.prof18.slashgrab.findersync
+      FINDER_EXTENSION_DISPLAY_NAME: Slashgrab Finder Extension
+
+targets:
+  SlashgrabCore:
+    type: library.static
+    platform: macOS
+    sources:
+      - Sources/SlashgrabCore
+    settings:
+      base:
+        PRODUCT_NAME: SlashgrabCore
+
+  SlashgrabFinderSync:
+    type: app-extension
+    platform: macOS
+    sources:
+      - Sources/SlashgrabFinderSync
+    info:
+      path: Config/SlashgrabFinderSync-Info.plist
+      properties:
+        CFBundleDisplayName: $(FINDER_EXTENSION_DISPLAY_NAME)
+        CFBundlePackageType: XPC!
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        SlashgrabAppGroupIdentifier: $(APP_GROUP_ID)
+        NSExtension:
+          NSExtensionAttributes: {}
+          NSExtensionPointIdentifier: com.apple.FinderSync
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FinderSync
+    entitlements:
+      path: Config/SlashgrabFinderSync.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    settings:
+      base:
+        PRODUCT_NAME: SlashgrabFinderSync
+        PRODUCT_BUNDLE_IDENTIFIER: $(FINDER_EXTENSION_BUNDLE_ID)
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+    dependencies:
+      - target: SlashgrabCore
+      - sdk: AppKit.framework
+      - sdk: FinderSync.framework
+
+  Slashgrab:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/Slashgrab
+        excludes:
+          - Resources/AppIconDev.icon
+      - path: Scripts/Assets/AppIconDev.icon
+        buildPhase: resources
+    info:
+      path: Config/Slashgrab-Info.plist
+      properties:
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        CFBundleIconName: $(APP_ICON_NAME)
+        CFBundlePackageType: APPL
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        LSUIElement: true
+        NSHumanReadableCopyright: Copyright © 2026 Marco Gomiero.
+        NSPrincipalClass: NSApplication
+        SlashgrabAppGroupIdentifier: $(APP_GROUP_ID)
+    entitlements:
+      path: Config/Slashgrab.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    settings:
+      base:
+        PRODUCT_NAME: $(APP_DISPLAY_NAME)
+        PRODUCT_MODULE_NAME: Slashgrab
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
+        ASSETCATALOG_COMPILER_APPICON_NAME: $(APP_ICON_NAME)
+    dependencies:
+      - target: SlashgrabCore
+      - target: SlashgrabFinderSync
+        embed: true
+      - package: Sparkle
+        product: Sparkle
+      - sdk: FinderSync.framework
+
+  SlashgrabCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/SlashgrabCoreTests
+    dependencies:
+      - target: SlashgrabCore
+    settings:
+      base:
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+  SlashgrabTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/SlashgrabTests
+    dependencies:
+      - target: Slashgrab
+      - target: SlashgrabCore
+    settings:
+      base:
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/$(APP_DISPLAY_NAME).app/Contents/MacOS/$(APP_DISPLAY_NAME)
+        BUNDLE_LOADER: $(TEST_HOST)
+
+schemes:
+  Slashgrab:
+    build:
+      targets:
+        Slashgrab: all
+        SlashgrabCoreTests: [test]
+        SlashgrabTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - SlashgrabCoreTests
+        - SlashgrabTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

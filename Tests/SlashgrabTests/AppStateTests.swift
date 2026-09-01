@@ -9,13 +9,17 @@ struct AppStateTests {
     @Test("Dropped URLs are formatted, copied, and persisted")
     func droppedURLsAreCopiedAndPersisted() {
         let defaults = makeDefaults()
+        let sharedDefaults = makeDefaults()
         let settings = AppSettingsStore(defaults: defaults)
+        let sharedSettings = AppSettingsStore(defaults: sharedDefaults)
         let clipboard = SpyClipboardWriter()
         let appState = AppState(
             settings: settings,
+            sharedSettings: sharedSettings,
             formatter: PathFormatter(homeDirectory: URL(fileURLWithPath: "/Users/mg")),
             clipboardWriter: clipboard,
-            launchAtLoginController: FakeLaunchAtLoginController()
+            launchAtLoginController: FakeLaunchAtLoginController(),
+            finderExtensionController: FakeFinderExtensionController()
         )
 
         appState.setSelectedFormat(.doubleQuoted)
@@ -27,6 +31,24 @@ struct AppStateTests {
         #expect(clipboard.writtenStrings == ["\"/Users/mg/Desktop/Test File.txt\""])
         #expect(appState.history.entries == ["\"/Users/mg/Desktop/Test File.txt\""])
         #expect(settings.loadHistory().entries == ["\"/Users/mg/Desktop/Test File.txt\""])
+        #expect(sharedSettings.selectedFormat == .doubleQuoted)
+    }
+
+    @Test("The current format is migrated to shared Finder settings")
+    func selectedFormatIsMigratedToSharedSettings() {
+        let settings = AppSettingsStore(defaults: makeDefaults())
+        settings.selectedFormat = .fileURL
+        let sharedSettings = AppSettingsStore(defaults: makeDefaults())
+
+        _ = AppState(
+            settings: settings,
+            sharedSettings: sharedSettings,
+            clipboardWriter: SpyClipboardWriter(),
+            launchAtLoginController: FakeLaunchAtLoginController(),
+            finderExtensionController: FakeFinderExtensionController()
+        )
+
+        #expect(sharedSettings.selectedFormat == .fileURL)
     }
 
     @Test("Empty drops fail without writing clipboard or history")
@@ -36,7 +58,8 @@ struct AppStateTests {
         let appState = AppState(
             settings: settings,
             clipboardWriter: clipboard,
-            launchAtLoginController: FakeLaunchAtLoginController()
+            launchAtLoginController: FakeLaunchAtLoginController(),
+            finderExtensionController: FakeFinderExtensionController()
         )
 
         let copied = appState.handleDroppedURLs([])
@@ -55,7 +78,8 @@ struct AppStateTests {
         let appState = AppState(
             settings: settings,
             clipboardWriter: clipboard,
-            launchAtLoginController: FakeLaunchAtLoginController()
+            launchAtLoginController: FakeLaunchAtLoginController(),
+            finderExtensionController: FakeFinderExtensionController()
         )
 
         let copied = appState.handleDroppedURLs([
@@ -76,7 +100,8 @@ struct AppStateTests {
         let appState = AppState(
             settings: settings,
             clipboardWriter: SpyClipboardWriter(),
-            launchAtLoginController: controller
+            launchAtLoginController: controller,
+            finderExtensionController: FakeFinderExtensionController()
         )
 
         appState.setLaunchAtLoginEnabled(true)
@@ -94,6 +119,48 @@ struct AppStateTests {
         #expect(!settings.launchAtLoginEnabled)
         #expect(appState.feedback?.kind == .failure)
         #expect(appState.feedback?.message == "Launch at login failed")
+    }
+
+    @Test("Launch at login refresh uses the live service state")
+    func launchAtLoginRefreshUsesLiveServiceState() {
+        let settings = AppSettingsStore(defaults: makeDefaults())
+        settings.launchAtLoginEnabled = true
+        let controller = FakeLaunchAtLoginController()
+        let appState = AppState(
+            settings: settings,
+            clipboardWriter: SpyClipboardWriter(),
+            launchAtLoginController: controller,
+            finderExtensionController: FakeFinderExtensionController()
+        )
+
+        #expect(!appState.launchAtLoginEnabled)
+        #expect(!settings.launchAtLoginEnabled)
+
+        controller.isEnabled = true
+        appState.refreshLaunchAtLoginStatus()
+
+        #expect(appState.launchAtLoginEnabled)
+        #expect(settings.launchAtLoginEnabled)
+    }
+
+    @Test("Finder extension status refreshes and settings can be opened")
+    func finderExtensionManagement() {
+        let finderController = FakeFinderExtensionController()
+        let appState = AppState(
+            settings: AppSettingsStore(defaults: makeDefaults()),
+            clipboardWriter: SpyClipboardWriter(),
+            launchAtLoginController: FakeLaunchAtLoginController(),
+            finderExtensionController: finderController
+        )
+
+        #expect(!appState.finderExtensionEnabled)
+
+        finderController.isEnabled = true
+        appState.refreshFinderExtensionStatus()
+        appState.showFinderExtensionSettings()
+
+        #expect(appState.finderExtensionEnabled)
+        #expect(finderController.showManagementInterfaceCallCount == 1)
     }
 
     private func makeDefaults() -> UserDefaults {
@@ -127,6 +194,16 @@ private final class FakeLaunchAtLoginController: LaunchAtLoginControlling, @unch
             throw errorToThrow
         }
         isEnabled = enabled
+    }
+}
+
+@MainActor
+private final class FakeFinderExtensionController: FinderExtensionManaging {
+    var isEnabled = false
+    private(set) var showManagementInterfaceCallCount = 0
+
+    func showManagementInterface() {
+        showManagementInterfaceCallCount += 1
     }
 }
 

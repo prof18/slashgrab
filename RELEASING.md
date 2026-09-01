@@ -6,6 +6,7 @@
 - `SPARKLE_PUBLIC_ED_KEY` can be set directly, or `Scripts/package_app.sh --production` can derive it from `SPARKLE_PRIVATE_KEY_FILE`.
 - Local production smoke runs through `Scripts/build_and_run.sh --production --release` may run without the key; they are ad-hoc signed and have Sparkle disabled.
 - Install a Developer ID Application certificate locally.
+- Install XcodeGen 2.46 or newer. `project.yml` generates the app, core, tests, and embedded Finder Sync extension targets.
 - Store notarization credentials with `xcrun notarytool store-credentials`.
 - `Scripts/make_appcast.sh` uses `generate_appcast` from `PATH` or from SwiftPM's `.build/artifacts/sparkle/Sparkle/bin/generate_appcast`.
 
@@ -27,18 +28,23 @@ Every public release ships two artifacts:
 9. Confirm `appcast.xml` contains an enclosure for `Slashgrab-X.Y.Z.zip` with `sparkle:edSignature`.
 10. Commit and push `appcast.xml`.
 
+The Finder Sync extension is embedded at `Slashgrab.app/Contents/PlugIns/SlashgrabFinderSync.appex`. It is sandboxed, signed before the containing app, and uses the bundle identifier `com.prof18.slashgrab.findersync`. The app and extension share the selected **Copy As** format through the team-scoped App Group `<signing team>.com.prof18.slashgrab.shared`. This macOS-specific App Group form does not require registration or a provisioning profile. Do not use a `group.*` override with this profile-free manual signing flow; those identifiers require a provisioning profile and are rejected by the packaging script.
+
 ## Validation
 
 Run these against the final app:
 
 ```bash
-codesign -dvvv --entitlements :- Slashgrab.app
-codesign --verify --verbose=2 Slashgrab.app
+codesign -dvvv --entitlements - Slashgrab.app
+codesign -dvvv --entitlements - Slashgrab.app/Contents/PlugIns/SlashgrabFinderSync.appex
+codesign --verify --deep --strict --verbose=2 Slashgrab.app
+codesign --verify --strict --verbose=2 Slashgrab.app/Contents/PlugIns/SlashgrabFinderSync.appex
 spctl -a -t exec -vv Slashgrab.app
 xcrun stapler validate Slashgrab.app
 spctl -a -t open --context context:primary-signature -vv Slashgrab.dmg
 xcrun stapler validate Slashgrab.dmg
 plutil -p Slashgrab.app/Contents/Info.plist
+plutil -p Slashgrab.app/Contents/PlugIns/SlashgrabFinderSync.appex/Contents/Info.plist
 ```
 
 Dev builds default to `Slashgrab Dev.app` with `com.prof18.slashgrab.dev`, disabled Sparkle checks, separate settings/history, a `DEV` menu bar label, and a dev-badged app icon. Production package verification is explicit with `./Scripts/build_and_run.sh --production --release --verify`; release notarization uses `Slashgrab.app` with `com.prof18.slashgrab`.

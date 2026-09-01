@@ -14,73 +14,64 @@ struct AboutView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
+        GeometryReader { geometry in
+            ScrollView {
+                aboutContent
+                    .padding(28)
+                    .frame(maxWidth: .infinity, minHeight: geometry.size.height)
+            }
+        }
+    }
+
+    private var aboutContent: some View {
+        VStack(spacing: 14) {
+            HStack(alignment: .center, spacing: 18) {
                 Image(nsImage: AppIconProvider.image())
                     .resizable()
                     .interpolation(.high)
-                    .frame(width: 96, height: 96)
+                    .frame(width: 76, height: 76)
 
-                HStack(spacing: 10) {
-                    Text(appName)
-                        .font(.system(size: 36, weight: .bold))
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(appName)
+                            .font(.custom("Avenir Next", size: 26, relativeTo: .title).weight(.bold))
 
-                    if buildInfo.isDevBuild {
-                        Text("DEV")
-                            .font(.headline.weight(.heavy))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(.orange, in: RoundedRectangle(cornerRadius: 6))
-                    }
-                }
-
-                Text(versionLine)
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-
-                Text("Drop files on the menu bar and copy clean filesystem paths instantly.")
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 520)
-                    .padding(.top, 4)
-
-                VStack(spacing: 14) {
-                    ForEach(links) { link in
-                        Link(destination: link.url) {
-                            Label(link.title, systemImage: link.systemImage)
-                                .font(.title2.weight(.semibold))
-                                .frame(maxWidth: .infinity, alignment: .center)
+                        if buildInfo.isDevBuild {
+                            Text("DEV")
+                                .font(.custom("Avenir Next", size: 9, relativeTo: .caption2).weight(.heavy))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(.orange, in: RoundedRectangle(cornerRadius: 5))
                         }
-                        .buttonStyle(.plain)
                     }
-                }
-                .padding(.top, 4)
 
-                Button(action: onCheckForUpdates) {
-                    Text("Check for Updates")
-                        .font(.body)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .disabled(!canCheckForUpdates)
-                .padding(.top, 8)
-
-                if let copyright {
-                    Text(copyright)
-                        .font(.footnote)
-                        .foregroundStyle(.tertiary)
-                        .padding(.top, 8)
+                    Text(versionLine)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 32)
-            .padding(.vertical, 36)
+
+            Text("Drop files on the menu bar and copy clean filesystem paths instantly.")
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: 20) {
+                ForEach(links) { link in
+                    Link(destination: link.url) {
+                        Label(link.title, systemImage: link.systemImage)
+                    }
+                }
+            }
+
+            Button("Check for Updates", action: onCheckForUpdates)
+                .disabled(!canCheckForUpdates)
+
+            if let copyright {
+                Text(copyright)
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
+            }
         }
-        .frame(minWidth: 560, minHeight: 560)
     }
 
     private var links: [AboutLink] {

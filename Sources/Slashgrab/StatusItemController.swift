@@ -10,9 +10,7 @@ final class StatusItemController {
     private let popover = NSPopover()
     private let feedbackPopover = NSPopover()
     private let dropReadyPopover = NSPopover()
-    private let updater = SparkleUpdater()
     private var statusView: DropTargetStatusView?
-    private var aboutWindowController: NSWindowController?
     private var dropReadyShowTask: DispatchWorkItem?
     private var feedbackDismissTask: Task<Void, Never>?
     private var cancellables: Set<AnyCancellable> = []
@@ -66,14 +64,16 @@ final class StatusItemController {
         statusView = view
 
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 360, height: 292)
+        popover.contentSize = NSSize(width: 360, height: menuPopoverHeight)
         popover.contentViewController = NSHostingController(
             rootView: MenuPopoverView(
                 appState: appState,
                 buildInfo: buildInfo,
-                updater: updater,
-                onAbout: { [weak self] in
-                    self?.openAboutWindow()
+                onPrepareSettings: { [weak self] in
+                    self?.prepareToOpenSettings()
+                },
+                onOpenLegacySettings: { [weak self] in
+                    self?.openLegacySettings()
                 },
                 onQuit: { NSApp.terminate(nil) }
             )
@@ -110,6 +110,8 @@ final class StatusItemController {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            appState.refreshFinderExtensionStatus()
+            popover.contentSize = NSSize(width: 360, height: menuPopoverHeight)
             popover.show(relativeTo: anchorView.bounds, of: anchorView, preferredEdge: .minY)
             clearMenuPopoverFocus()
             DispatchQueue.main.async { [weak self] in
@@ -128,35 +130,21 @@ final class StatusItemController {
         window.makeFirstResponder(nil)
     }
 
-    private func openAboutWindow() {
+    private var menuPopoverHeight: CGFloat {
+        appState.lastCopiedOutput == nil ? 248 : 310
+    }
+
+    private func prepareToOpenSettings() {
         popover.performClose(nil)
-
-        if aboutWindowController == nil {
-            let view = AboutView(
-                buildInfo: buildInfo,
-                canCheckForUpdates: updater.canCheckForUpdates,
-                onCheckForUpdates: { [weak updater] in
-                    updater?.checkForUpdates()
-                }
-            )
-            let host = NSHostingController(rootView: view)
-            let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 600, height: 620),
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                backing: .buffered,
-                defer: false
-            )
-            window.contentViewController = host
-            window.title = "About Slashgrab"
-            window.minSize = NSSize(width: 560, height: 560)
-            window.center()
-
-            aboutWindowController = NSWindowController(window: window)
-        }
-
         NSApp.activate(ignoringOtherApps: true)
-        aboutWindowController?.showWindow(nil)
-        aboutWindowController?.window?.makeKeyAndOrderFront(nil)
+    }
+
+    private func openLegacySettings() {
+        prepareToOpenSettings()
+        let opened = NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        if !opened {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
     }
 
     private func showFeedbackPopover(_ feedback: DropFeedback) {

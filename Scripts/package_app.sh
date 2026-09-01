@@ -3,13 +3,14 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
-export CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache"
 
 EXPLICIT_APP_NAME=${APP_NAME:-}
-EXPLICIT_PRODUCT_NAME=${PRODUCT_NAME:-}
 EXPLICIT_BUNDLE_ID=${BUNDLE_ID:-}
 EXPLICIT_SIGNING_MODE=${SIGNING_MODE:-}
 EXPLICIT_APP_IDENTITY=${APP_IDENTITY:-}
+EXPLICIT_APP_GROUP_ID=${APP_GROUP_ID:-}
+EXPLICIT_DEV_APP_GROUP_ID=${DEV_APP_GROUP_ID:-}
+EXPLICIT_TEAM_ID=${TEAM_ID:-}
 EXPLICIT_ARCHES=${ARCHES:-}
 EXPLICIT_SPARKLE_FEED_URL=${SPARKLE_FEED_URL:-}
 EXPLICIT_SPARKLE_PRIVATE_KEY_FILE=${SPARKLE_PRIVATE_KEY_FILE:-}
@@ -27,15 +28,7 @@ CONFIGURATION=${CONFIGURATION:-release}
 APP_VARIANT=${APP_VARIANT:-dev}
 
 usage() {
-  cat <<'USAGE'
-Usage: Scripts/package_app.sh [debug|release] [--dev|--production]
-
-Options:
-  debug          Build a debug app bundle.
-  release        Build a release app bundle. Default.
-  --dev          Package Slashgrab Dev.app with com.prof18.slashgrab.dev. Default.
-  --production   Package Slashgrab.app with com.prof18.slashgrab.
-USAGE
+  echo "Usage: Scripts/package_app.sh [debug|release] [--dev|--production]"
 }
 
 for arg in "$@"; do
@@ -48,20 +41,27 @@ for arg in "$@"; do
   esac
 done
 
-PRODUCT_NAME=${EXPLICIT_PRODUCT_NAME:-${PRODUCT_NAME:-Slashgrab}}
+case "$CONFIGURATION" in
+  debug) XCODE_CONFIGURATION=Debug ;;
+  release) XCODE_CONFIGURATION=Release ;;
+  *) echo "Unknown configuration: $CONFIGURATION" >&2; exit 2 ;;
+esac
+
 case "$APP_VARIANT" in
   dev)
     DEFAULT_APP_NAME="Slashgrab Dev"
     DEFAULT_BUNDLE_ID="com.prof18.slashgrab.dev"
+    APP_ICON_NAME=AppIconDev
     DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS=false
     ;;
   production)
     DEFAULT_APP_NAME="Slashgrab"
     DEFAULT_BUNDLE_ID="com.prof18.slashgrab"
+    APP_ICON_NAME=AppIcon
     DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS=true
     ;;
   *)
-    echo "Unknown APP_VARIANT: $APP_VARIANT" >&2
+    echo "Unknown app variant: $APP_VARIANT" >&2
     usage
     exit 2
     ;;
@@ -69,16 +69,72 @@ esac
 
 APP_NAME=${EXPLICIT_APP_NAME:-$DEFAULT_APP_NAME}
 BUNDLE_ID=${EXPLICIT_BUNDLE_ID:-$DEFAULT_BUNDLE_ID}
+
+if [[ -z "$APP_NAME" || "$APP_NAME" == "." || "$APP_NAME" == ".." || "$APP_NAME" == */* ]]; then
+  echo "ERROR: APP_NAME must be a non-empty file name without path components." >&2
+  exit 1
+fi
+
+FINDER_EXTENSION_BUNDLE_ID="${BUNDLE_ID}.findersync"
+FINDER_EXTENSION_DISPLAY_NAME="$APP_NAME Finder Extension"
 MACOS_MIN_VERSION=${MACOS_MIN_VERSION:-13.0}
-SIGNING_MODE=${SIGNING_MODE:-adhoc}
-APP_IDENTITY=${APP_IDENTITY:-}
 SIGNING_MODE=${EXPLICIT_SIGNING_MODE:-${SIGNING_MODE:-adhoc}}
 APP_IDENTITY=${EXPLICIT_APP_IDENTITY:-${APP_IDENTITY:-}}
+ARCHES_VALUE=${EXPLICIT_ARCHES:-${ARCHES:-}}
 SPARKLE_FEED_URL=${EXPLICIT_SPARKLE_FEED_URL:-${SPARKLE_FEED_URL:-"https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml"}}
 SPARKLE_PRIVATE_KEY_FILE=${EXPLICIT_SPARKLE_PRIVATE_KEY_FILE:-${SPARKLE_PRIVATE_KEY_FILE:-}}
 SPARKLE_PUBLIC_ED_KEY=${EXPLICIT_SPARKLE_PUBLIC_ED_KEY:-${SPARKLE_PUBLIC_ED_KEY:-}}
 ENABLE_SPARKLE_AUTOMATIC_CHECKS=${EXPLICIT_ENABLE_SPARKLE_AUTOMATIC_CHECKS:-${ENABLE_SPARKLE_AUTOMATIC_CHECKS:-$DEFAULT_ENABLE_SPARKLE_AUTOMATIC_CHECKS}}
 ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN=${EXPLICIT_ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN:-${ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN:-0}}
+
+derive_signing_team_identifier() {
+  (
+    probe_dir=$(/usr/bin/mktemp -d "/tmp/slashgrab-signing-team.XXXXXX")
+    trap '/bin/rm -rf "$probe_dir"' EXIT
+    /bin/cp /usr/bin/true "$probe_dir/probe"
+    /usr/bin/codesign --force --sign "$APP_IDENTITY" "$probe_dir/probe" >/dev/null 2>&1
+    /usr/bin/codesign -d --verbose=4 "$probe_dir/probe" 2>&1 \
+      | /usr/bin/awk -F= '/^TeamIdentifier=/{print $2; exit}'
+  )
+}
+
+if [[ "$SIGNING_MODE" == "adhoc" || -z "$APP_IDENTITY" ]]; then
+  SIGNING_TEAM_ID=${EXPLICIT_TEAM_ID:-${TEAM_ID:-adhoc}}
+else
+  SIGNING_TEAM_ID=$(derive_signing_team_identifier)
+  if [[ -z "$SIGNING_TEAM_ID" || "$SIGNING_TEAM_ID" == "not set" ]]; then
+    echo "ERROR: Could not derive the team identifier from APP_IDENTITY." >&2
+    exit 1
+  fi
+fi
+
+if [[ "$APP_VARIANT" == "dev" ]]; then
+  CONFIGURED_APP_GROUP_ID=${EXPLICIT_DEV_APP_GROUP_ID:-${DEV_APP_GROUP_ID:-}}
+  APP_GROUP_VARIABLE=DEV_APP_GROUP_ID
+else
+  CONFIGURED_APP_GROUP_ID=${EXPLICIT_APP_GROUP_ID:-${APP_GROUP_ID:-}}
+  APP_GROUP_VARIABLE=APP_GROUP_ID
+fi
+APP_GROUP_ID=${CONFIGURED_APP_GROUP_ID:-"$SIGNING_TEAM_ID.$BUNDLE_ID.shared"}
+
+if [[ "$APP_GROUP_ID" == group.* ]]; then
+  echo "ERROR: $APP_GROUP_VARIABLE cannot use a group.* identifier with profile-free manual signing." >&2
+  echo "Use a team-prefixed identifier such as $SIGNING_TEAM_ID.$BUNDLE_ID.shared, or leave it unset to use that default." >&2
+  exit 1
+fi
+
+if [[ "$SIGNING_MODE" != "adhoc" && -n "$APP_IDENTITY" &&
+      "$APP_GROUP_ID" != "$SIGNING_TEAM_ID".* ]]; then
+  echo "ERROR: $APP_GROUP_VARIABLE must start with the signing team identifier $SIGNING_TEAM_ID." >&2
+  exit 1
+fi
+
+if [[ "$APP_VARIANT" == "dev" ]]; then
+  ENABLE_SPARKLE_AUTOMATIC_CHECKS=false
+  SPARKLE_FEED_URL=""
+  SPARKLE_PRIVATE_KEY_FILE=""
+  SPARKLE_PUBLIC_ED_KEY=""
+fi
 
 derive_sparkle_public_key() {
   SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" swift -e 'import Foundation; import CryptoKit; let path = ProcessInfo.processInfo.environment["SPARKLE_PRIVATE_KEY_FILE"]!; let text = try String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines); let seed = Data(base64Encoded: text)!; let privateKey = try Curve25519.Signing.PrivateKey(rawRepresentation: seed); print(privateKey.publicKey.rawRepresentation.base64EncodedString())'
@@ -90,7 +146,18 @@ if [[ "$APP_VARIANT" == "production" ]]; then
     exit 1
   fi
   if [[ -z "$SPARKLE_PUBLIC_ED_KEY" && -n "$SPARKLE_PRIVATE_KEY_FILE" ]]; then
-    SPARKLE_PUBLIC_ED_KEY="$(derive_sparkle_public_key)"
+    if [[ ! -f "$SPARKLE_PRIVATE_KEY_FILE" ]]; then
+      if [[ "$ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN" == "1" && "$SIGNING_MODE" == "adhoc" ]]; then
+        echo "WARN: SPARKLE_PRIVATE_KEY_FILE does not exist; building local ad-hoc production app with Sparkle disabled: $SPARKLE_PRIVATE_KEY_FILE" >&2
+        SPARKLE_PRIVATE_KEY_FILE=""
+      else
+        echo "ERROR: SPARKLE_PRIVATE_KEY_FILE does not exist: $SPARKLE_PRIVATE_KEY_FILE" >&2
+        exit 1
+      fi
+    fi
+    if [[ -n "$SPARKLE_PRIVATE_KEY_FILE" ]]; then
+      SPARKLE_PUBLIC_ED_KEY="$(derive_sparkle_public_key)"
+    fi
   fi
   if [[ -z "$SPARKLE_PUBLIC_ED_KEY" ]]; then
     if [[ "$ALLOW_MISSING_SPARKLE_FOR_LOCAL_RUN" == "1" && "$SIGNING_MODE" == "adhoc" ]]; then
@@ -110,206 +177,93 @@ else
   BUILD_NUMBER=${BUILD_NUMBER:-1}
 fi
 
-APP_BUNDLE="$ROOT_DIR/${APP_NAME}.app"
-EXECUTABLE_TARGET="$APP_BUNDLE/Contents/MacOS/$PRODUCT_NAME"
-ARCH_LIST=( ${EXPLICIT_ARCHES:-${ARCHES:-}} )
-if [[ "$APP_VARIANT" == "dev" && -d "$ROOT_DIR/Scripts/Assets/AppIconDev.icon" ]]; then
-  APP_ICON_SOURCE_DIR="$ROOT_DIR/Scripts/Assets/AppIconDev.icon"
-else
-  APP_ICON_SOURCE_DIR="$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/AppIcon.icon"
-fi
+"$ROOT_DIR/Scripts/generate_project.sh"
 
-build_product_path() {
-  local arch="${1:-}"
-  if [[ -z "$arch" ]]; then
-    echo "$ROOT_DIR/.build/$CONFIGURATION/$PRODUCT_NAME"
-  else
-    echo "$ROOT_DIR/.build/${arch}-apple-macosx/$CONFIGURATION/$PRODUCT_NAME"
-  fi
-}
-
-build_dir_for_frameworks() {
-  local arch="${1:-}"
-  if [[ -z "$arch" ]]; then
-    echo "$ROOT_DIR/.build/$CONFIGURATION"
-  else
-    echo "$ROOT_DIR/.build/${arch}-apple-macosx/$CONFIGURATION"
-  fi
-}
-
-if [[ ${#ARCH_LIST[@]} -eq 0 ]]; then
-  swift build --disable-sandbox -c "$CONFIGURATION" -q
-else
-  for arch in "${ARCH_LIST[@]}"; do
-    swift build --disable-sandbox -c "$CONFIGURATION" --arch "$arch" -q
-  done
-fi
-
-rm -rf "$APP_BUNDLE"
-mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources" "$APP_BUNDLE/Contents/Frameworks"
-
-if [[ ${#ARCH_LIST[@]} -eq 0 ]]; then
-  EXECUTABLE_SOURCE="$(build_product_path)"
-  if [[ ! -f "$EXECUTABLE_SOURCE" ]]; then
-    echo "ERROR: Missing built product at $EXECUTABLE_SOURCE" >&2
-    exit 1
-  fi
-  cp "$EXECUTABLE_SOURCE" "$EXECUTABLE_TARGET"
-else
-  EXECUTABLES=()
-  for arch in "${ARCH_LIST[@]}"; do
-    EXECUTABLE_SOURCE="$(build_product_path "$arch")"
-    if [[ ! -f "$EXECUTABLE_SOURCE" ]]; then
-      echo "ERROR: Missing $arch built product at $EXECUTABLE_SOURCE" >&2
-      exit 1
-    fi
-    EXECUTABLES+=("$EXECUTABLE_SOURCE")
-  done
-  /usr/bin/lipo -create "${EXECUTABLES[@]}" -output "$EXECUTABLE_TARGET"
-fi
-chmod +x "$EXECUTABLE_TARGET"
-
-FRAMEWORK_ARCH="${ARCH_LIST[0]:-}"
-BUILD_DIR="$(build_dir_for_frameworks "$FRAMEWORK_ARCH")"
-if compgen -G "$BUILD_DIR/*.framework" >/dev/null; then
-  cp -R "$BUILD_DIR/"*.framework "$APP_BUNDLE/Contents/Frameworks/"
-  chmod -R a+rX "$APP_BUNDLE/Contents/Frameworks"
-  /usr/bin/install_name_tool -add_rpath "@executable_path/../Frameworks" "$EXECUTABLE_TARGET" || true
-
-  if [[ ${#ARCH_LIST[@]} -gt 1 ]]; then
-    while IFS= read -r -d '' copied_executable; do
-      copied_archs="$(/usr/bin/lipo -archs "$copied_executable" 2>/dev/null || true)"
-      if [[ -z "$copied_archs" ]]; then
-        continue
-      fi
-
-      has_all_requested_arches=1
-      for arch in "${ARCH_LIST[@]}"; do
-        if [[ " $copied_archs " != *" $arch "* ]]; then
-          has_all_requested_arches=0
-          break
-        fi
-      done
-
-      if [[ "$has_all_requested_arches" == "1" ]]; then
-        continue
-      fi
-
-      relative_path="${copied_executable#"$APP_BUNDLE/Contents/Frameworks/"}"
-      framework_executables=()
-      missing_arch_binary=0
-      LIPO_SLICE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/slashgrab-framework-lipo.XXXXXX")"
-
-      for arch in "${ARCH_LIST[@]}"; do
-        arch_executable="$(build_dir_for_frameworks "$arch")/$relative_path"
-        if [[ ! -f "$arch_executable" ]]; then
-          missing_arch_binary=1
-          break
-        fi
-
-        source_archs="$(/usr/bin/lipo -archs "$arch_executable" 2>/dev/null || true)"
-        if [[ " $source_archs " != *" $arch "* ]]; then
-          missing_arch_binary=1
-          break
-        fi
-
-        if [[ "$source_archs" == "$arch" ]]; then
-          framework_executables+=("$arch_executable")
-        else
-          slice_path="$LIPO_SLICE_DIR/${arch}-${relative_path//\//_}"
-          /usr/bin/lipo "$arch_executable" -thin "$arch" -output "$slice_path"
-          framework_executables+=("$slice_path")
-        fi
-      done
-
-      if [[ "$missing_arch_binary" == "0" ]]; then
-        /usr/bin/lipo -create "${framework_executables[@]}" -output "$copied_executable"
-        chmod +x "$copied_executable"
-      fi
-
-      rm -rf "$LIPO_SLICE_DIR"
-    done < <(find "$APP_BUNDLE/Contents/Frameworks" -type f -perm -111 -print0)
-  fi
-fi
-
-if compgen -G "$BUILD_DIR/${PRODUCT_NAME}_${PRODUCT_NAME}.*" >/dev/null; then
-  cp -R "$BUILD_DIR/${PRODUCT_NAME}_${PRODUCT_NAME}."* "$APP_BUNDLE/Contents/Resources/"
-fi
-
-if [[ -d "$APP_ICON_SOURCE_DIR" ]]; then
-  ICON_BUILD_DIR="$ROOT_DIR/.build/app-icon-$CONFIGURATION"
-  ICON_INPUT_DIR="$ROOT_DIR/.build/app-icon-input-$CONFIGURATION/AppIcon.icon"
-
-  if ! xcrun --find actool >/dev/null 2>&1; then
-    echo "ERROR: AppIcon.icon requires Xcode actool to generate app bundle icon resources." >&2
-    exit 1
-  fi
-
-  rm -rf "$ICON_BUILD_DIR"
-  rm -rf "$(dirname "$ICON_INPUT_DIR")"
-  mkdir -p "$ICON_BUILD_DIR" "$(dirname "$ICON_INPUT_DIR")"
-  cp -R "$APP_ICON_SOURCE_DIR" "$ICON_INPUT_DIR"
-
-  xcrun actool "$ICON_INPUT_DIR" \
-    --compile "$ICON_BUILD_DIR" \
-    --platform macosx \
-    --minimum-deployment-target "$MACOS_MIN_VERSION" \
-    --target-device mac \
-    --app-icon AppIcon \
-    --include-all-app-icons \
-    --output-partial-info-plist "$ICON_BUILD_DIR/AppIcon-partial.plist" \
-    >/dev/null
-
-  cp -R "$ICON_INPUT_DIR" "$APP_BUNDLE/Contents/Resources/AppIcon.icon"
-
-  if [[ ! -f "$ICON_BUILD_DIR/Assets.car" || ! -f "$ICON_BUILD_DIR/AppIcon.icns" ]]; then
-    echo "ERROR: actool did not generate expected AppIcon resources." >&2
-    exit 1
-  fi
-
-  cp "$ICON_BUILD_DIR/Assets.car" "$APP_BUNDLE/Contents/Resources/Assets.car"
-  cp "$ICON_BUILD_DIR/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
-fi
-
-if [[ -f "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/AppIcon.icns" ]]; then
-  cp "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
-fi
-
-if [[ -f "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/Assets.car" ]]; then
-  cp "$ROOT_DIR/Sources/$PRODUCT_NAME/Resources/Assets.car" "$APP_BUNDLE/Contents/Resources/Assets.car"
-fi
-
+DERIVED_DATA="$ROOT_DIR/.build/xcode-derived-${APP_VARIANT}-${CONFIGURATION}"
+PACKAGE_CACHE="$ROOT_DIR/.build/xcode-packages"
+CONFIGURATION_PRODUCTS="$DERIVED_DATA/Build/Products/$XCODE_CONFIGURATION"
+BUILT_APP="$CONFIGURATION_PRODUCTS/$APP_NAME.app"
 BUILD_TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
-cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleName</key><string>${APP_NAME}</string>
-    <key>CFBundleDisplayName</key><string>${APP_NAME}</string>
-    <key>CFBundleIdentifier</key><string>${BUNDLE_ID}</string>
-    <key>CFBundleExecutable</key><string>${PRODUCT_NAME}</string>
-    <key>CFBundleIconName</key><string>AppIcon</string>
-    <key>CFBundleIconFile</key><string>AppIcon</string>
-    <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>${MARKETING_VERSION}</string>
-    <key>CFBundleVersion</key><string>${BUILD_NUMBER}</string>
-    <key>LSMinimumSystemVersion</key><string>${MACOS_MIN_VERSION}</string>
-    <key>LSUIElement</key><true/>
-    <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Marco Gomiero.</string>
-    <key>BuildTimestamp</key><string>${BUILD_TIMESTAMP}</string>
-    <key>GitCommit</key><string>${GIT_COMMIT}</string>
-    <key>SlashgrabBuildVariant</key><string>${APP_VARIANT}</string>
-    <key>SUFeedURL</key><string>${SPARKLE_FEED_URL}</string>
-    <key>SUPublicEDKey</key><string>${SPARKLE_PUBLIC_ED_KEY}</string>
-    <key>SUEnableAutomaticChecks</key><${ENABLE_SPARKLE_AUTOMATIC_CHECKS}/>
-</dict>
-</plist>
-PLIST
+XCODEBUILD_ARGS=(
+  -project "$ROOT_DIR/Slashgrab.xcodeproj"
+  -scheme Slashgrab
+  -configuration "$XCODE_CONFIGURATION"
+  -derivedDataPath "$DERIVED_DATA"
+  -clonedSourcePackagesDirPath "$PACKAGE_CACHE"
+  -destination "generic/platform=macOS"
+  CODE_SIGNING_ALLOWED=NO
+  ENABLE_DEBUG_DYLIB=NO
+  "APP_DISPLAY_NAME=$APP_NAME"
+  "APP_BUNDLE_ID=$BUNDLE_ID"
+  "APP_ICON_NAME=$APP_ICON_NAME"
+  "APP_GROUP_ID=$APP_GROUP_ID"
+  "FINDER_EXTENSION_BUNDLE_ID=$FINDER_EXTENSION_BUNDLE_ID"
+  "FINDER_EXTENSION_DISPLAY_NAME=$FINDER_EXTENSION_DISPLAY_NAME"
+  "MACOSX_DEPLOYMENT_TARGET=$MACOS_MIN_VERSION"
+  "MARKETING_VERSION=$MARKETING_VERSION"
+  "CURRENT_PROJECT_VERSION=$BUILD_NUMBER"
+)
 
-xattr -cr "$APP_BUNDLE"
+if [[ -n "$ARCHES_VALUE" ]]; then
+  XCODEBUILD_ARGS+=("ARCHS=$ARCHES_VALUE" ONLY_ACTIVE_ARCH=NO)
+fi
+
+/bin/rm -rf "$CONFIGURATION_PRODUCTS"
+xcodebuild "${XCODEBUILD_ARGS[@]}" build -quiet
+
+APP_BUNDLE="$ROOT_DIR/$APP_NAME.app"
+if [[ ! -d "$BUILT_APP" ]]; then
+  echo "ERROR: Missing built app at $BUILT_APP" >&2
+  exit 1
+fi
+
+rm -rf "$APP_BUNDLE"
+/usr/bin/ditto "$BUILT_APP" "$APP_BUNDLE"
+
+if [[ "$CONFIGURATION" == "release" ]]; then
+  UNEXPECTED_DEBUG_DYLIB="$(
+    /usr/bin/find "$APP_BUNDLE" -type f \
+      \( -name '__preview.dylib' -o -name '*.debug.dylib' \) \
+      -print -quit
+  )"
+  if [[ -n "$UNEXPECTED_DEBUG_DYLIB" ]]; then
+    echo "ERROR: Release package contains a preview/debug dylib: $UNEXPECTED_DEBUG_DYLIB" >&2
+    exit 1
+  fi
+fi
+
+APP_INFO="$APP_BUNDLE/Contents/Info.plist"
+EXTENSION_BUNDLE="$APP_BUNDLE/Contents/PlugIns/SlashgrabFinderSync.appex"
+EXTENSION_INFO="$EXTENSION_BUNDLE/Contents/Info.plist"
+if [[ ! -f "$EXTENSION_INFO" ]]; then
+  echo "ERROR: Finder Sync extension was not embedded at $EXTENSION_BUNDLE" >&2
+  exit 1
+fi
+
+/usr/bin/plutil -insert BuildTimestamp -string "$BUILD_TIMESTAMP" "$APP_INFO"
+/usr/bin/plutil -insert GitCommit -string "$GIT_COMMIT" "$APP_INFO"
+/usr/bin/plutil -insert SlashgrabBuildVariant -string "$APP_VARIANT" "$APP_INFO"
+/usr/bin/plutil -insert SUFeedURL -string "$SPARKLE_FEED_URL" "$APP_INFO"
+/usr/bin/plutil -insert SUPublicEDKey -string "$SPARKLE_PUBLIC_ED_KEY" "$APP_INFO"
+/usr/bin/plutil -insert SUEnableAutomaticChecks -bool "$ENABLE_SPARKLE_AUTOMATIC_CHECKS" "$APP_INFO"
+/usr/bin/plutil -replace SlashgrabAppGroupIdentifier -string "$APP_GROUP_ID" "$APP_INFO"
+/usr/bin/plutil -replace SlashgrabAppGroupIdentifier -string "$APP_GROUP_ID" "$EXTENSION_INFO"
+
+/usr/bin/plutil -lint "$APP_INFO" "$EXTENSION_INFO" >/dev/null
+/usr/bin/xattr -cr "$APP_BUNDLE"
+
+ENTITLEMENTS_DIR="$ROOT_DIR/.build/entitlements/$APP_VARIANT-$CONFIGURATION"
+APP_ENTITLEMENTS="$ENTITLEMENTS_DIR/Slashgrab.entitlements"
+EXTENSION_ENTITLEMENTS="$ENTITLEMENTS_DIR/SlashgrabFinderSync.entitlements"
+/bin/rm -rf "$ENTITLEMENTS_DIR"
+/bin/mkdir -p "$ENTITLEMENTS_DIR"
+/bin/cp "$ROOT_DIR/Config/Slashgrab.entitlements" "$APP_ENTITLEMENTS"
+/bin/cp "$ROOT_DIR/Config/SlashgrabFinderSync.entitlements" "$EXTENSION_ENTITLEMENTS"
+/usr/libexec/PlistBuddy -c "Set :com.apple.security.application-groups:0 $APP_GROUP_ID" "$APP_ENTITLEMENTS"
+/usr/libexec/PlistBuddy -c "Set :com.apple.security.application-groups:0 $APP_GROUP_ID" "$EXTENSION_ENTITLEMENTS"
+/usr/bin/plutil -lint "$APP_ENTITLEMENTS" "$EXTENSION_ENTITLEMENTS" >/dev/null
 
 if [[ "$SIGNING_MODE" == "adhoc" || -z "$APP_IDENTITY" ]]; then
   CODESIGN_ARGS=(--force --sign -)
@@ -317,7 +271,7 @@ else
   CODESIGN_ARGS=(--force --timestamp --options runtime --sign "$APP_IDENTITY")
 fi
 
-if compgen -G "$APP_BUNDLE/Contents/Frameworks/*.framework" >/dev/null; then
+if [[ -d "$APP_BUNDLE/Contents/Frameworks" ]]; then
   while IFS= read -r -d '' executable; do
     /usr/bin/codesign "${CODESIGN_ARGS[@]}" "$executable"
   done < <(find "$APP_BUNDLE/Contents/Frameworks" -type f -perm -111 -print0)
@@ -331,7 +285,13 @@ if compgen -G "$APP_BUNDLE/Contents/Frameworks/*.framework" >/dev/null; then
   done < <(find "$APP_BUNDLE/Contents/Frameworks" -name "*.framework" -type d -print0)
 fi
 
-/usr/bin/codesign "${CODESIGN_ARGS[@]}" "$APP_BUNDLE"
+/usr/bin/codesign "${CODESIGN_ARGS[@]}" \
+  --entitlements "$EXTENSION_ENTITLEMENTS" \
+  "$EXTENSION_BUNDLE"
+/usr/bin/codesign "${CODESIGN_ARGS[@]}" \
+  --entitlements "$APP_ENTITLEMENTS" \
+  "$APP_BUNDLE"
 
-/usr/bin/codesign --verify --verbose=2 "$APP_BUNDLE" >/dev/null
+/usr/bin/codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE" >/dev/null
 echo "Created $APP_BUNDLE"
+echo "Shared settings App Group: $APP_GROUP_ID"

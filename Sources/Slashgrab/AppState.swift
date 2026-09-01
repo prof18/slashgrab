@@ -7,32 +7,47 @@ final class AppState: ObservableObject {
     @Published private(set) var feedback: DropFeedback?
     @Published var selectedFormat: PathFormat
     @Published private(set) var launchAtLoginEnabled: Bool
+    @Published private(set) var finderExtensionEnabled: Bool
 
     private let settings: AppSettingsStore
+    private let sharedSettings: AppSettingsStore?
     private let formatter: PathFormatter
     private let clipboardWriter: ClipboardWriting
     private let launchAtLoginController: LaunchAtLoginControlling
+    private let finderExtensionController: FinderExtensionManaging
     private var feedbackTask: Task<Void, Never>?
 
     init(
         settings: AppSettingsStore,
+        sharedSettings: AppSettingsStore? = nil,
         formatter: PathFormatter = PathFormatter(),
         clipboardWriter: ClipboardWriting = AppKitClipboardWriter(),
-        launchAtLoginController: LaunchAtLoginControlling = LaunchAtLoginController()
+        launchAtLoginController: LaunchAtLoginControlling = LaunchAtLoginController(),
+        finderExtensionController: FinderExtensionManaging = FinderExtensionController()
     ) {
         self.settings = settings
+        self.sharedSettings = sharedSettings
         self.formatter = formatter
         self.clipboardWriter = clipboardWriter
         self.launchAtLoginController = launchAtLoginController
-        selectedFormat = settings.selectedFormat
+        self.finderExtensionController = finderExtensionController
+        let storedFormat = settings.selectedFormat
+        selectedFormat = storedFormat
+        sharedSettings?.selectedFormat = storedFormat
         history = settings.loadHistory()
-        launchAtLoginEnabled = launchAtLoginController.isEnabled || settings.launchAtLoginEnabled
+        let currentLaunchAtLoginEnabled = launchAtLoginController.isEnabled
+        launchAtLoginEnabled = currentLaunchAtLoginEnabled
+        finderExtensionEnabled = finderExtensionController.isEnabled
+        settings.launchAtLoginEnabled = currentLaunchAtLoginEnabled
     }
 
     static func production() -> AppState {
         let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.prof18.slashgrab.dev"
         let defaults = UserDefaults(suiteName: bundleIdentifier) ?? .standard
-        return AppState(settings: AppSettingsStore(defaults: defaults))
+        return AppState(
+            settings: AppSettingsStore(defaults: defaults),
+            sharedSettings: SharedSettings.makeStore()
+        )
     }
 
     var lastCopiedOutput: String? {
@@ -42,6 +57,7 @@ final class AppState: ObservableObject {
     func setSelectedFormat(_ format: PathFormat) {
         selectedFormat = format
         settings.selectedFormat = format
+        sharedSettings?.selectedFormat = format
     }
 
     @discardableResult
@@ -75,6 +91,19 @@ final class AppState: ObservableObject {
             settings.launchAtLoginEnabled = launchAtLoginEnabled
             showFeedback(.failure("Launch at login failed"))
         }
+    }
+
+    func refreshFinderExtensionStatus() {
+        finderExtensionEnabled = finderExtensionController.isEnabled
+    }
+
+    func refreshLaunchAtLoginStatus() {
+        launchAtLoginEnabled = launchAtLoginController.isEnabled
+        settings.launchAtLoginEnabled = launchAtLoginEnabled
+    }
+
+    func showFinderExtensionSettings() {
+        finderExtensionController.showManagementInterface()
     }
 
     @discardableResult

@@ -2,11 +2,12 @@ import Foundation
 
 public final class AppSettingsStore: @unchecked Sendable {
     private enum Key {
-        static let selectedFormat = "selectedPathFormat"
         static let historyEntries = "historyEntries"
         static let historyLimit = "historyLimit"
         static let launchAtLoginEnabled = "launchAtLoginEnabled"
     }
+
+    static let selectedFormatKey = "selectedPathFormat"
 
     private let defaults: UserDefaults
 
@@ -16,14 +17,14 @@ public final class AppSettingsStore: @unchecked Sendable {
 
     public var selectedFormat: PathFormat {
         get {
-            guard let rawValue = defaults.string(forKey: Key.selectedFormat),
+            guard let rawValue = defaults.string(forKey: Self.selectedFormatKey),
                   let format = PathFormat(rawValue: rawValue) else {
                 return .shellEscaped
             }
             return format
         }
         set {
-            defaults.set(newValue.rawValue, forKey: Key.selectedFormat)
+            defaults.set(newValue.rawValue, forKey: Self.selectedFormatKey)
         }
     }
 
