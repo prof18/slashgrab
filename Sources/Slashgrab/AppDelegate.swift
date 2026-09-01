@@ -6,9 +6,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let updater = SparkleUpdater()
 
     private var statusItemController: StatusItemController?
+    private let finderExtensionUpdateController = FinderExtensionUpdateController.production()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        finderExtensionUpdateController.refreshRunningHostsIfNeeded()
 
         let controller = StatusItemController(appState: appState)
         controller.install()
