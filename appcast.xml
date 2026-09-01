@@ -6,6 +6,21 @@
         <description>Appcast for Slashgrab.</description>
         <language>en</language>
         <item>
+            <title>0.0.3</title>
+            <pubDate>Tue, 01 Sep 2026 21:22:06 +0200</pubDate>
+            <link>https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml</link>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>0.0.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>Slashgrab 0.0.3</h2>
+<ul>
+<li>Add Finder <strong>Copy Path</strong> actions to <strong>Recently grabbed</strong>, keeping copy history consistent with menu-bar drops.</li>
+</ul>
+<p><a href="https://github.com/prof18/slashgrab/blob/main/CHANGELOG.md">View full changelog</a></p>
+]]></description>
+            <enclosure url="https://github.com/prof18/slashgrab/releases/download/v0.0.3/Slashgrab-0.0.3.zip" length="3509105" type="application/octet-stream" sparkle:edSignature="J12Shof/NpNlNi0/PVkgH9iI71grV3bq3PHobjDEIV/W7QXW58tUXZgVZFCmBWBmwbTbsdgEOIQABzcH3zthAg=="/>
+        </item>
+        <item>
             <title>0.0.2</title>
             <pubDate>Tue, 01 Sep 2026 13:19:54 +0200</pubDate>
             <link>https://raw.githubusercontent.com/prof18/slashgrab/main/appcast.xml</link>
