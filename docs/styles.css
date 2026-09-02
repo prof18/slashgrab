@@ -420,6 +420,45 @@ a { color: inherit; }
   color: var(--ink-faint); text-align: center; background: var(--bg); border-top: 1px solid var(--line-soft);
 }
 
+/* Finder extension — one focused workflow story, backed by a real macOS screenshot */
+.finder-story {
+  margin-top: 46px; padding: clamp(28px, 5vw, 52px); border-radius: 20px;
+  display: grid; grid-template-columns: minmax(0, .8fr) minmax(340px, 1.2fr); gap: clamp(32px, 6vw, 72px);
+  align-items: center; overflow: hidden; scroll-margin-top: 74px;
+  color: oklch(0.96 0.004 260); background:
+    radial-gradient(90% 100% at 100% 0%, rgba(0,122,255,.24), transparent 58%),
+    oklch(0.22 0.012 260);
+  box-shadow: 0 22px 60px -36px rgba(20,22,30,.7);
+}
+.finder-story-copy .eyebrow {
+  margin: 0 0 14px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: #69b1ff;
+}
+.finder-story-copy h2 {
+  margin: 0; font-size: clamp(30px, 4vw, 44px); font-weight: 600; line-height: 1.04;
+  letter-spacing: -.025em;
+}
+.finder-story-copy > p:not(.eyebrow) {
+  margin: 18px 0 0; color: oklch(0.78 0.012 260); font-size: 15.5px; line-height: 1.6;
+  text-wrap: pretty;
+}
+.finder-story-copy strong { color: #fff; font-weight: 600; }
+.finder-story-copy .finder-setup {
+  padding-top: 18px; border-top: 1px solid rgba(255,255,255,.12); font-size: 13px;
+}
+.finder-shot {
+  margin: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.16); border-radius: 16px;
+  background: rgba(255,255,255,.08); box-shadow: 0 28px 60px -28px rgba(0,0,0,.9);
+  transform: rotate(.6deg); transition: transform .28s ease, box-shadow .28s ease;
+}
+.finder-shot:hover { transform: rotate(0) translateY(-3px); box-shadow: 0 34px 70px -28px rgba(0,0,0,.95); }
+.finder-shot img { display: block; width: 100%; height: auto; }
+.finder-shot figcaption {
+  padding: 10px 14px 12px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+  text-align: center; text-transform: uppercase; color: oklch(0.7 0.012 260);
+  background: rgba(0,0,0,.16); border-top: 1px solid rgba(255,255,255,.1);
+}
+
 /* live demo block sitting in the hero */
 .demo-block { margin: 46px 0 10px; }
 .demo-cap {
@@ -589,6 +628,9 @@ a { color: inherit; }
 @media (max-width: 860px) {
   :root { --page-gutter: clamp(20px, 5.5vw, 28px); }
   .why-grid, .steps, .feat-grid, .build { grid-template-columns: 1fr; }
+  .finder-story { grid-template-columns: 1fr; gap: 28px; }
+  .finder-shot { width: min(100%, 520px); margin-inline: auto; transform: none; }
+  .finder-shot:hover { transform: translateY(-2px); }
   .fmt-card { grid-template-columns: 1fr; }
   .fmt-list { border-right: none; border-bottom: 1px solid var(--line-soft); flex-direction: row; flex-wrap: wrap; }
   .fmt-opt { flex: 1 1 auto; }
@@ -659,3 +701,6 @@ a { color: inherit; }
   .toast .t-path { font-size: 10px; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .finder-shot, .finder-shot:hover { transform: none; transition: none; }
+}

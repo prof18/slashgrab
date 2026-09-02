@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Slashgrab — macOS Menu Bar App to Copy File Paths</title>
-  <meta name="description" content="Slashgrab is a free macOS menu-bar app to copy file and folder paths. Drop on the icon, paste in Terminal, scripts, chat, or AI tools instantly." />
+  <title>Slashgrab — Copy File and Folder Paths on macOS</title>
+  <meta name="description" content="Slashgrab is a free macOS app for copying file and folder paths. Drop items on the menu-bar icon or choose Copy Path from Finder's right-click menu." />
   <link rel="canonical" href="https://slashgrab.app/" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Slashgrab — macOS Menu Bar App to Copy File Paths" />
-  <meta property="og:description" content="Copy file and folder paths on Mac from your menu bar. Drop on the Slashgrab icon — paste in Terminal, scripts, chat, or AI tools." />
+  <meta property="og:title" content="Slashgrab — Copy File and Folder Paths on macOS" />
+  <meta property="og:description" content="Copy file and folder paths from the macOS menu bar or Finder's right-click menu, then paste them anywhere." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://slashgrab.app/" />
   <meta property="og:site_name" content="Slashgrab" />
@@ -17,14 +17,14 @@
   <meta property="og:image" content="https://slashgrab.app/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Slashgrab — a macOS menu-bar utility for copying file paths" />
+  <meta property="og:image:alt" content="Slashgrab — a macOS utility for copying file paths" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Slashgrab — macOS Menu Bar App to Copy File Paths" />
-  <meta name="twitter:description" content="Copy file and folder paths on Mac from your menu bar. Drop on the Slashgrab icon — paste in Terminal, scripts, chat, or AI tools." />
+  <meta name="twitter:title" content="Slashgrab — Copy File and Folder Paths on macOS" />
+  <meta name="twitter:description" content="Copy file and folder paths from the macOS menu bar or Finder's right-click menu, then paste them anywhere." />
   <meta name="twitter:image" content="https://slashgrab.app/og-image.png" />
-  <meta name="twitter:image:alt" content="Slashgrab — a macOS menu-bar utility for copying file paths" />
+  <meta name="twitter:image:alt" content="Slashgrab — a macOS utility for copying file paths" />
 
   <!-- Favicon -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -38,7 +38,7 @@
     "name": "Slashgrab",
     "operatingSystem": "macOS 13 or newer",
     "applicationCategory": "UtilitiesApplication",
-    "description": "A free macOS menu-bar utility that copies file and folder paths to your clipboard when you drop items on the icon.",
+    "description": "A free macOS utility that copies file and folder paths from its menu-bar drop target or Finder's contextual menu.",
     "url": "https://slashgrab.app/",
     "downloadUrl": "https://github.com/prof18/slashgrab/releases/latest/download/Slashgrab.dmg",
     "softwareHelp": "https://github.com/prof18/slashgrab",
@@ -50,6 +50,7 @@
     },
     "featureList": [
       "Menu-bar drop target for files and folders",
+      "Finder contextual-menu Copy Path extension",
       "Instant clipboard copy of formatted paths",
       "Shell-escaped, plain, quoted, file URL, and home-relative path formats",
       "Multi-item drop support",
@@ -96,9 +97,8 @@
     <p class="kicker">macOS menu-bar utility</p>
     <h1>Drop files.<br />Grab <span class="slash">paths.</span></h1>
     <p class="sub">
-      A tiny macOS utility for copying file paths from your menu bar. Drag any file or folder
-      onto the Slashgrab icon and the path lands on your clipboard — <b>instantly</b>.
-      No Finder detour, no extra window.
+      A tiny macOS utility for copying file paths. Drag any file or folder onto the menu-bar icon,
+      or right-click it in Finder and choose <b>Copy Path</b>. The path lands on your clipboard instantly.
     </p>
     <div class="hero-cta">
       <a class="bigbtn primary" href="https://github.com/prof18/slashgrab/releases/latest/download/Slashgrab.dmg" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="1.8"/><path d="M2 20h20"/><path d="M10 16.5l-.6 3.5M14 16.5l.6 3.5"/></svg> Download for macOS</a>
@@ -106,7 +106,7 @@
     <div class="hero-meta">
       <span>macOS 13 or newer</span><span class="dot"></span>
       <span>Native menu-bar app</span><span class="dot"></span>
-      <span>Drop · copy · paste</span>
+      <span>Drop or right-click · copy · paste</span>
     </div>
 
     <div class="demo-block">
@@ -165,7 +165,7 @@
         <span class="wc-tag">Before — the detour</span>
         <ul class="why-steps">
           <li><span class="n">1</span><span class="txt">Hunt for the file in Finder</span></li>
-          <li><span class="n">2</span><span class="txt">Drag it into Terminal, or dig through a copy-path menu</span></li>
+          <li><span class="n">2</span><span class="txt">Open Get Info or drag it into Terminal</span></li>
           <li><span class="n">3</span><span class="txt">Copy the result</span></li>
           <li><span class="n">4</span><span class="txt">Switch back to where you actually needed it</span></li>
         </ul>
@@ -174,11 +174,11 @@
       <div class="card why-card after">
         <span class="wc-tag">After — with Slashgrab</span>
         <ul class="why-steps">
-          <li><span class="n">1</span><span class="txt">Drag a file or folder</span></li>
-          <li><span class="n">2</span><span class="txt">Drop it on the Slashgrab menu-bar icon</span></li>
+          <li><span class="n">1</span><span class="txt">Drag a file, or right-click it in Finder</span></li>
+          <li><span class="n">2</span><span class="txt">Drop it on Slashgrab, or choose Copy Path</span></li>
           <li><span class="n">3</span><span class="txt">Paste the copied path</span></li>
         </ul>
-        <p class="wc-foot">No command palette. No Finder service. No temporary shelf.</p>
+        <p class="wc-foot">No command palette. No extra window. No temporary shelf.</p>
       </div>
     </div>
   </section>
@@ -228,6 +228,30 @@
       <figcaption class="demo-gif-cap">Screen recording — the real app on macOS</figcaption>
     </figure>
 
+    <section class="finder-story" id="finder" aria-labelledby="finder-title">
+      <div class="finder-story-copy">
+        <p class="eyebrow">Finder extension</p>
+        <h2 id="finder-title">Right-click. Copy Path.</h2>
+        <p>
+          Select any file or folder in Finder and choose <strong>Copy Path</strong> from the right-click menu.
+          Slashgrab uses your current <strong>Copy As</strong> format, even when you select multiple items.
+        </p>
+        <p class="finder-setup">
+          Enable it once from Slashgrab Settings, then it stays ready inside Finder.
+        </p>
+      </div>
+      <figure class="finder-shot">
+        <img
+          src="assets/finder-copy-path.png"
+          width="954"
+          height="1048"
+          loading="lazy"
+          alt="Finder right-click menu with Copy Path highlighted."
+        />
+        <figcaption>Copy Path in Finder's contextual menu</figcaption>
+      </figure>
+    </section>
+
     <div class="flow-divide" id="features"><span class="flow-label">Everything it does</span></div>
 
     <div class="feat-grid">
@@ -235,6 +259,11 @@
         <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 9h18"/><circle cx="16.5" cy="7" r=".6" fill="currentColor"/><circle cx="18.5" cy="7" r=".6" fill="currentColor"/></svg></span>
         <h3>Menu-bar drop target</h3>
         <p>Drop files or folders directly onto the Slashgrab icon — no window to open first.</p>
+      </div>
+      <div class="card feat">
+        <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5h6l2 2h8v13H4z"/><path d="M8 13h8"/><path d="M13 10l3 3-3 3"/></svg></span>
+        <h3>Finder Copy Path</h3>
+        <p>Right-click selected files or folders in Finder and copy their formatted paths directly.</p>
       </div>
       <div class="card feat">
         <span class="f-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 5l3 3-8 8-3-3z"/><path d="M5 19l3-1-2-2z"/><path d="M14 7l3 3"/></svg></span>
